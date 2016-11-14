@@ -1,0 +1,95 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{576297B8-423D-4533-B75A-F186CCFF0D2A}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>VAR.Json.Tests</RootNamespace>
+    <AssemblyName>VAR.Json.Tests</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="tests\fail01.json" />
+    <None Include="tests\fail10.json" />
+    <None Include="tests\fail11.json" />
+    <None Include="tests\fail12.json" />
+    <None Include="tests\fail13.json" />
+    <None Include="tests\fail14.json" />
+    <None Include="tests\fail15.json" />
+    <None Include="tests\fail16.json" />
+    <None Include="tests\fail17.json" />
+    <None Include="tests\fail18.json" />
+    <None Include="tests\fail19.json" />
+    <None Include="tests\fail02.json" />
+    <None Include="tests\fail20.json" />
+    <None Include="tests\fail21.json" />
+    <None Include="tests\fail22.json" />
+    <None Include="tests\fail23.json" />
+    <None Include="tests\fail24.json" />
+    <None Include="tests\fail25.json" />
+    <None Include="tests\fail26.json" />
+    <None Include="tests\fail27.json" />
+    <None Include="tests\fail28.json" />
+    <None Include="tests\fail29.json" />
+    <None Include="tests\fail03.json" />
+    <None Include="tests\fail30.json" />
+    <None Include="tests\fail31.json" />
+    <None Include="tests\fail32.json" />
+    <None Include="tests\fail33.json" />
+    <None Include="tests\fail04.json" />
+    <None Include="tests\fail05.json" />
+    <None Include="tests\fail06.json" />
+    <None Include="tests\fail07.json" />
+    <None Include="tests\fail08.json" />
+    <None Include="tests\fail09.json" />
+    <None Include="tests\pass01.json" />
+    <None Include="tests\pass02.json" />
+    <None Include="tests\pass03.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\VAR.Json\VAR.Json.csproj">
+      <Project>{28b3f937-145c-4fd4-a75b-a25ea4cc0428}</Project>
+      <Name>VAR.Json</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
