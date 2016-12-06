@@ -36,6 +36,7 @@
   <ItemGroup>
     <Compile Include="JsonParser.cs" />
     <Compile Include="JsonWriter.cs" />
+    <Compile Include="ObjectActivator.cs" />
     <Compile Include="ParserContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

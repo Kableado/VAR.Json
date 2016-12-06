@@ -73,7 +73,7 @@ namespace VAR.Json
         private object ConvertToType(Dictionary<string, object> obj, Type type)
         {
             PropertyInfo[] typeProperties = Type_GetProperties(type);
-            object newObj = Activator.CreateInstance(type);
+            object newObj = ObjectActivator.CreateInstance(type);
             foreach (PropertyInfo prop in typeProperties)
             {
                 if (obj.ContainsKey(prop.Name))
