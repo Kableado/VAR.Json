@@ -78,7 +78,23 @@ namespace VAR.Json
             {
                 if (obj.ContainsKey(prop.Name))
                 {
-                    prop.SetValue(newObj, Convert.ChangeType(obj[prop.Name], prop.PropertyType), null);
+                    Type underliningType = Nullable.GetUnderlyingType(prop.PropertyType);
+                    Type effectiveType = underliningType ?? prop.PropertyType;
+                    object valueOrig = obj[prop.Name];
+                    object valueDest;
+                    if (underliningType != null && valueOrig == null)
+                    {
+                        valueDest = null;
+                    }
+                    else if (effectiveType == typeof(Guid) && valueOrig is string)
+                    {
+                        valueDest = new Guid((string)valueOrig);
+                    }
+                    else
+                    {
+                        valueDest = Convert.ChangeType(obj[prop.Name], effectiveType);
+                    }
+                    prop.SetValue(newObj, valueDest, null);
                 }
             }
             return newObj;
