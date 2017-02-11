@@ -2,11 +2,11 @@
 using System.Runtime.InteropServices;
 
 [assembly: AssemblyTitle("VAR.Json")]
-[assembly: AssemblyDescription("Json Library")]
+[assembly: AssemblyDescription(".Net library for JSON parsing")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("VAR")]
 [assembly: AssemblyProduct("VAR.Json")]
-[assembly: AssemblyCopyright("Copyright © VAR 2016")]
+[assembly: AssemblyCopyright("Copyright © VAR 2016-2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 [assembly: ComVisible(false)]
