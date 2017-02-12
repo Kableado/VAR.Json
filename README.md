@@ -18,7 +18,10 @@ Serialize any object to JSON:
 	string jsonText = jsonWriter(new List<int>{1, 2, 3, 4});
 
 ## Building
-A Visual Studio 2015 and 2010 solutions are provided. Simply, click build on the IDE.
+A Visual Studio 2015 solutions are provided. Simply, click build on the IDE.
+
+A .nuget package can be build using:
+	VAR.Json\Build.NuGet.cmd
 
 ## Contributing
 1. Fork it!
