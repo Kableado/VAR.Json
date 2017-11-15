@@ -25,30 +25,36 @@ namespace VAR.Json
 
         public JsonWriter(int indentChars)
         {
-            this._indent = true;
-            this._indentChars = indentChars;
-            this._useTabForIndent = false;
+            _indent = true;
+            _indentChars = indentChars;
+            _useTabForIndent = false;
         }
 
         public JsonWriter(bool useTabForIndent)
         {
-            this._indent = true;
-            this._useTabForIndent = useTabForIndent;
+            _indent = true;
+            _useTabForIndent = useTabForIndent;
         }
 
         #endregion Creator
 
         #region Private methods
 
-        private bool IsValue(Object obj)
+        private bool IsValue(object obj)
         {
             if (obj == null)
             {
                 return true;
             }
-            if ((obj is float) || (obj is double) ||
-                (obj is System.Int16) || (obj is System.Int32) || (obj is System.Int64)
-                    || (obj is String) || (obj is Boolean))
+            if (
+                (obj is float) ||
+                (obj is double) ||
+                (obj is short) ||
+                (obj is int) ||
+                (obj is long) ||
+                (obj is string) ||
+                (obj is bool) ||
+                false)
             {
                 return true;
             }
@@ -72,7 +78,7 @@ namespace VAR.Json
                 for (int i = 0; i < n; i++) { sbOutput.Append(' '); }
             }
         }
-        
+
         private void WriteString(StringBuilder sbOutput, string str)
         {
             sbOutput.Append('"');
@@ -95,28 +101,33 @@ namespace VAR.Json
             sbOutput.Append('"');
         }
 
-        private void WriteValue(StringBuilder sbOutput, Object obj, int level, bool useReflection)
+        private void WriteValue(StringBuilder sbOutput, object obj, List<object> parentLevels, bool useReflection)
         {
             if (obj == null || obj is DBNull)
             {
                 // NULL
                 sbOutput.Append("null");
             }
-            else if ((obj is float) || (obj is double) ||
-              (obj is System.Int16) || (obj is System.Int32) || (obj is System.Int64))
+            else if (
+                (obj is float) ||
+                (obj is double) ||
+                (obj is short) ||
+                (obj is int) ||
+                (obj is long) ||
+                false)
             {
                 // Numbers
                 sbOutput.Append(obj.ToString());
             }
-            else if (obj is String)
+            else if (obj is string)
             {
                 // Strings
-                WriteString(sbOutput, (String)obj);
+                WriteString(sbOutput, (string)obj);
             }
-            else if (obj is Boolean)
+            else if (obj is bool)
             {
                 // Booleans
-                sbOutput.Append(((Boolean)obj) ? "true" : "false");
+                sbOutput.Append(((bool)obj) ? "true" : "false");
             }
             else if (obj is DateTime)
             {
@@ -128,19 +139,19 @@ namespace VAR.Json
             else if (obj is IDictionary)
             {
                 // Objects
-                WriteObject(sbOutput, obj, level);
+                WriteObject(sbOutput, obj, parentLevels);
             }
             else if (obj is IEnumerable)
             {
                 // Array/List
-                WriteList(sbOutput, obj, level);
+                WriteList(sbOutput, obj, parentLevels);
             }
             else
             {
                 if (useReflection)
                 {
                     // Reflected object
-                    WriteReflectedObject(sbOutput, obj, level);
+                    WriteReflectedObject(sbOutput, obj, parentLevels);
                 }
                 else
                 {
@@ -149,7 +160,7 @@ namespace VAR.Json
             }
         }
 
-        private void WriteList(StringBuilder sbOutput, Object obj, int level)
+        private void WriteList(StringBuilder sbOutput, object obj, List<object> parentLevels)
         {
             IEnumerable list = (IEnumerable)obj;
             int n = 0;
@@ -177,7 +188,7 @@ namespace VAR.Json
             sbOutput.Append("[ ");
             if (!isLeaf || n > _indentThresold)
             {
-                WriteIndent(sbOutput, level + 1);
+                WriteIndent(sbOutput, parentLevels.Count + 1);
             }
             foreach (object childObj in list)
             {
@@ -186,20 +197,22 @@ namespace VAR.Json
                     sbOutput.Append(", ");
                     if (!isLeaf || n > _indentThresold)
                     {
-                        WriteIndent(sbOutput, level + 1);
+                        WriteIndent(sbOutput, parentLevels.Count + 1);
                     }
                 }
                 first = false;
-                WriteValue(sbOutput, childObj, level + 1, true);
+                parentLevels.Add(obj);
+                WriteValue(sbOutput, childObj, parentLevels, true);
+                parentLevels.Remove(obj);
             }
             if (!isLeaf || n > _indentThresold)
             {
-                WriteIndent(sbOutput, level);
+                WriteIndent(sbOutput, parentLevels.Count);
             }
             sbOutput.Append(" ]");
         }
 
-        private void WriteObject(StringBuilder sbOutput, Object obj, int level)
+        private void WriteObject(StringBuilder sbOutput, object obj, List<object> parentLevels)
         {
             IDictionary map = (IDictionary)obj;
             int n = map.Count;
@@ -227,7 +240,7 @@ namespace VAR.Json
             sbOutput.Append("{ ");
             if (!isLeaf || n > _indentThresold)
             {
-                WriteIndent(sbOutput, level + 1);
+                WriteIndent(sbOutput, parentLevels.Count + 1);
             }
             foreach (object key in map.Keys)
             {
@@ -237,32 +250,33 @@ namespace VAR.Json
                     sbOutput.Append(", ");
                     if (!isLeaf || n > _indentThresold)
                     {
-                        WriteIndent(sbOutput, level + 1);
+                        WriteIndent(sbOutput, parentLevels.Count + 1);
                     }
                 }
                 first = false;
                 WriteString(sbOutput, Convert.ToString(key));
                 sbOutput.Append(": ");
-                WriteValue(sbOutput, value, level + 1, true);
+                parentLevels.Add(obj);
+                WriteValue(sbOutput, value, parentLevels, true);
+                parentLevels.Remove(obj);
             }
             if (!isLeaf || n > _indentThresold)
             {
-                WriteIndent(sbOutput, level);
+                WriteIndent(sbOutput, parentLevels.Count);
             }
             sbOutput.Append(" }");
         }
 
-        private void WriteReflectedObject(StringBuilder sbOutput, Object obj, int level)
+        private void WriteReflectedObject(StringBuilder sbOutput, object obj, List<object> parentLevels)
         {
             Type type = obj.GetType();
             PropertyInfo[] rawProperties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
             List<PropertyInfo> properties = new List<PropertyInfo>();
             foreach (PropertyInfo property in rawProperties)
             {
-                if (property.CanRead)
-                {
-                    properties.Add(property);
-                }
+                if (property.CanRead == false) { continue; }
+
+                properties.Add(property);
             }
             int n = properties.Count;
 
@@ -290,7 +304,7 @@ namespace VAR.Json
             sbOutput.Append("{ ");
             if (!isLeaf || n > _indentThresold)
             {
-                WriteIndent(sbOutput, level + 1);
+                WriteIndent(sbOutput, parentLevels.Count + 1);
             }
             foreach (PropertyInfo property in properties)
             {
@@ -306,17 +320,26 @@ namespace VAR.Json
                     sbOutput.Append(", ");
                     if (!isLeaf || n > _indentThresold)
                     {
-                        WriteIndent(sbOutput, level + 1);
+                        WriteIndent(sbOutput, parentLevels.Count + 1);
                     }
                 }
                 first = false;
                 WriteString(sbOutput, property.Name);
                 sbOutput.Append(": ");
-                WriteValue(sbOutput, value, level + 1, false);
+                parentLevels.Add(obj);
+                if (value != obj && parentLevels.Contains(value) == false)
+                {
+                    WriteValue(sbOutput, value, parentLevels, false);
+                }
+                else
+                {
+                    WriteValue(sbOutput, null, parentLevels, false);
+                }
+                parentLevels.Remove(obj);
             }
             if (!isLeaf || n > _indentThresold)
             {
-                WriteIndent(sbOutput, level);
+                WriteIndent(sbOutput, parentLevels.Count);
             }
             sbOutput.Append(" }");
         }
@@ -325,10 +348,10 @@ namespace VAR.Json
 
         #region Public methods
 
-        public String Write(Object obj)
+        public string Write(object obj)
         {
             StringBuilder sbOutput = new StringBuilder();
-            WriteValue(sbOutput, obj, 0, true);
+            WriteValue(sbOutput, obj, new List<object>(), true);
             return sbOutput.ToString();
         }
 
