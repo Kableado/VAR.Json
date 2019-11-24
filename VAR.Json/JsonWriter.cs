@@ -6,34 +6,74 @@ using System.Text;
 
 namespace VAR.Json
 {
+    public class JsonWriterConfiguration
+    {
+        private bool _indent;
+        public bool Indent { get => _indent; }
+
+        private bool _useTabForIndent;
+        public bool UseTabForIndent { get => _useTabForIndent; }
+
+        private int _indentChars;
+        public int IndentChars { get => _indentChars; }
+
+        private int _indentThresold;
+        public int IndentThresold { get => _indentThresold;  }
+
+        public JsonWriterConfiguration(
+            bool indent = false,
+            bool useTablForIndent = false,
+            int indentChars = 4,
+            int indentThresold = 3)
+        {
+            _indent = indent;
+            _useTabForIndent = useTablForIndent;
+            _indentChars = indentChars;
+            _indentThresold = indentThresold;
+        }
+
+        public bool Equals(JsonWriterConfiguration other)
+        {
+            return
+                other.Indent == Indent &&
+                other.UseTabForIndent == UseTabForIndent &&
+                other.IndentChars == IndentChars &&
+                other.IndentThresold == IndentThresold &&
+                true;
+        }
+
+        public override bool Equals(object other)
+        {
+            if(other is JsonWriterConfiguration)
+            {
+                return Equals(other as JsonWriterConfiguration);
+            }
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return _indent.GetHashCode() ^ _useTabForIndent.GetHashCode() ^ _indentChars.GetHashCode() ^ _indentThresold.GetHashCode();
+        }
+    }
+
     public class JsonWriter
     {
         #region Declarations
 
-        private bool _indent = false;
-        private bool _useTabForIndent = false;
-        private int _indentChars = 4;
-        private int _indentThresold = 3;
+        private JsonWriterConfiguration _config = null;
 
         #endregion Declarations
 
         #region Creator
 
-        public JsonWriter()
+        public JsonWriter(JsonWriterConfiguration config = null)
         {
-        }
-
-        public JsonWriter(int indentChars)
-        {
-            _indent = true;
-            _indentChars = indentChars;
-            _useTabForIndent = false;
-        }
-
-        public JsonWriter(bool useTabForIndent)
-        {
-            _indent = true;
-            _useTabForIndent = useTabForIndent;
+            _config = config;
+            if (_config == null)
+            {
+                _config = new JsonWriterConfiguration();
+            }
         }
 
         #endregion Creator
@@ -63,18 +103,18 @@ namespace VAR.Json
 
         private void WriteIndent(StringBuilder sbOutput, int level)
         {
-            if (!_indent)
+            if (!_config.Indent)
             {
                 return;
             }
             sbOutput.Append('\n');
-            if (_useTabForIndent)
+            if (_config.UseTabForIndent)
             {
                 for (int i = 0; i < level; i++) { sbOutput.Append('\t'); }
             }
             else
             {
-                int n = level * _indentChars;
+                int n = level * _config.IndentChars;
                 for (int i = 0; i < n; i++) { sbOutput.Append(' '); }
             }
         }
@@ -186,7 +226,7 @@ namespace VAR.Json
             // Write array
             bool first = true;
             sbOutput.Append("[ ");
-            if (!isLeaf || n > _indentThresold)
+            if (!isLeaf || n > _config.IndentThresold)
             {
                 WriteIndent(sbOutput, parentLevels.Count + 1);
             }
@@ -195,7 +235,7 @@ namespace VAR.Json
                 if (!first)
                 {
                     sbOutput.Append(", ");
-                    if (!isLeaf || n > _indentThresold)
+                    if (!isLeaf || n > _config.IndentThresold)
                     {
                         WriteIndent(sbOutput, parentLevels.Count + 1);
                     }
@@ -205,7 +245,7 @@ namespace VAR.Json
                 WriteValue(sbOutput, childObj, parentLevels, true);
                 parentLevels.Remove(obj);
             }
-            if (!isLeaf || n > _indentThresold)
+            if (!isLeaf || n > _config.IndentThresold)
             {
                 WriteIndent(sbOutput, parentLevels.Count);
             }
@@ -238,7 +278,7 @@ namespace VAR.Json
             // Write object
             bool first = true;
             sbOutput.Append("{ ");
-            if (!isLeaf || n > _indentThresold)
+            if (!isLeaf || n > _config.IndentThresold)
             {
                 WriteIndent(sbOutput, parentLevels.Count + 1);
             }
@@ -248,7 +288,7 @@ namespace VAR.Json
                 if (!first)
                 {
                     sbOutput.Append(", ");
-                    if (!isLeaf || n > _indentThresold)
+                    if (!isLeaf || n > _config.IndentThresold)
                     {
                         WriteIndent(sbOutput, parentLevels.Count + 1);
                     }
@@ -260,7 +300,7 @@ namespace VAR.Json
                 WriteValue(sbOutput, value, parentLevels, true);
                 parentLevels.Remove(obj);
             }
-            if (!isLeaf || n > _indentThresold)
+            if (!isLeaf || n > _config.IndentThresold)
             {
                 WriteIndent(sbOutput, parentLevels.Count);
             }
@@ -302,7 +342,7 @@ namespace VAR.Json
             // Write object
             bool first = true;
             sbOutput.Append("{ ");
-            if (!isLeaf || n > _indentThresold)
+            if (!isLeaf || n > _config.IndentThresold)
             {
                 WriteIndent(sbOutput, parentLevels.Count + 1);
             }
@@ -318,7 +358,7 @@ namespace VAR.Json
                 if (!first)
                 {
                     sbOutput.Append(", ");
-                    if (!isLeaf || n > _indentThresold)
+                    if (!isLeaf || n > _config.IndentThresold)
                     {
                         WriteIndent(sbOutput, parentLevels.Count + 1);
                     }
@@ -337,7 +377,7 @@ namespace VAR.Json
                 }
                 parentLevels.Remove(obj);
             }
-            if (!isLeaf || n > _indentThresold)
+            if (!isLeaf || n > _config.IndentThresold)
             {
                 WriteIndent(sbOutput, parentLevels.Count);
             }

@@ -96,7 +96,7 @@ namespace VAR.Json.Tests
             }
             if (obj != null && (obj is Exception) == false)
             {
-                JsonWriter writter = new JsonWriter(true);
+                JsonWriter writter = new JsonWriter(new JsonWriterConfiguration(indent: true));
                 Console.Out.WriteLine("Parsed:\n{0}", writter.Write(obj));
                 Console.Out.WriteLine("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
             }
