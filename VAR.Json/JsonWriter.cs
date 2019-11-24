@@ -9,16 +9,16 @@ namespace VAR.Json
     public class JsonWriterConfiguration
     {
         private bool _indent;
-        public bool Indent { get => _indent; }
+        public bool Indent { get { return _indent; } }
 
         private bool _useTabForIndent;
-        public bool UseTabForIndent { get => _useTabForIndent; }
+        public bool UseTabForIndent { get { return _useTabForIndent; } }
 
         private int _indentChars;
-        public int IndentChars { get => _indentChars; }
+        public int IndentChars { get { return _indentChars; } }
 
         private int _indentThresold;
-        public int IndentThresold { get => _indentThresold;  }
+        public int IndentThresold { get { return _indentThresold; } }
 
         public JsonWriterConfiguration(
             bool indent = false,
