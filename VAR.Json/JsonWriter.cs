@@ -22,12 +22,12 @@ namespace VAR.Json
 
         public JsonWriterConfiguration(
             bool indent = false,
-            bool useTablForIndent = false,
+            bool useTabForIndent = false,
             int indentChars = 4,
             int indentThresold = 3)
         {
             _indent = indent;
-            _useTabForIndent = useTablForIndent;
+            _useTabForIndent = useTabForIndent;
             _indentChars = indentChars;
             _indentThresold = indentThresold;
         }
@@ -397,29 +397,56 @@ namespace VAR.Json
 
         private static Dictionary<JsonWriterConfiguration, JsonWriter> _dictInstances = new Dictionary<JsonWriterConfiguration, JsonWriter>();
 
-        public static string WriteObject(object obj, JsonWriterConfiguration config = null)
-        {
-            
-            if(_dictInstances.ContainsKey(config) == false)
-            {
-                JsonWriter newJsonWriter = new JsonWriter(config);
-                _dictInstances.Add(config, newJsonWriter);
-            }
-            JsonWriter jsonWriter = _dictInstances[config];
-            return jsonWriter.Write(obj);
-        }
-
         public static string WriteObject(object obj,
+            JsonWriterConfiguration config = null,
             bool indent = false,
-            bool useTablForIndent = false,
+            bool useTabForIndent = false,
             int indentChars = 4,
             int indentThresold = 3)
         {
-            return WriteObject(obj, new JsonWriterConfiguration(
-                indent: indent, 
-                useTablForIndent: useTablForIndent, 
-                indentChars: indentChars, 
-                indentThresold: indentThresold));
+            JsonWriter jsonWriter = null;
+
+            if (config != null)
+            {
+                if (_dictInstances.ContainsKey(config) == false)
+                {
+                    jsonWriter = new JsonWriter(config);
+                    _dictInstances.Add(config, jsonWriter);
+                }
+                else
+                {
+                    jsonWriter = _dictInstances[config];
+                }
+                return jsonWriter.Write(obj);
+            }
+
+            foreach (KeyValuePair<JsonWriterConfiguration, JsonWriter> pair in _dictInstances)
+            {
+                if (
+                    pair.Key.Indent == indent &&
+                    pair.Key.UseTabForIndent == useTabForIndent &&
+                    pair.Key.IndentChars == indentChars &&
+                    pair.Key.IndentThresold == indentThresold &&
+                    true)
+                {
+                    jsonWriter = pair.Value;
+                    break;
+                }
+            }
+            if (jsonWriter != null)
+            {
+                return jsonWriter.Write(obj);
+            }
+
+            JsonWriterConfiguration jsonWriterConfiguration = new JsonWriterConfiguration(
+                indent: indent,
+                useTabForIndent: useTabForIndent,
+                indentChars: indentChars,
+                indentThresold: indentThresold);
+            jsonWriter = new JsonWriter(jsonWriterConfiguration);
+            _dictInstances.Add(jsonWriterConfiguration, jsonWriter);
+
+            return jsonWriter.Write(obj);
         }
 
         #endregion Public methods

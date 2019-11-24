@@ -628,12 +628,14 @@ namespace VAR.Json
 
         private static JsonParser _currentInstance = null;
 
-        public static object ParseText(string text)
+        public static object ParseText(string text, params Type[] knownTypes)
         {
-            if(_currentInstance == null)
+            if (_currentInstance == null)
             {
                 _currentInstance = new JsonParser();
             }
+            _currentInstance.KnownTypes.Clear();
+            _currentInstance.KnownTypes.AddRange(knownTypes);
             return _currentInstance.Parse(text);
         }
 
