@@ -15,7 +15,7 @@ namespace VAR.Json
         private ParserContext _ctx;
         private bool _tainted = false;
 
-        private List<Type> _knownTypes = new List<Type>();
+        private readonly List<Type> _knownTypes = new List<Type>();
 
         #endregion Declarations
 
@@ -35,7 +35,7 @@ namespace VAR.Json
 
         #region Private methods
 
-        private static Dictionary<Type, PropertyInfo[]> _dictProperties = new Dictionary<Type, PropertyInfo[]>();
+        private static readonly Dictionary<Type, PropertyInfo[]> _dictProperties = new Dictionary<Type, PropertyInfo[]>();
 
         private PropertyInfo[] Type_GetProperties(Type type)
         {
@@ -497,14 +497,14 @@ namespace VAR.Json
                 else if (c == ',')
                 {
                     _ctx.Next();
-                    c = _ctx.SkipWhite();
+                    _ctx.SkipWhite();
                     expectedKey = true;
                     expectedValue = false;
                 }
                 else if (c == '}')
                 {
                     // StrictRules: Mark as tainted on unexpected end of object
-                    if(expectedValue == true || expectedKey == true)
+                    if (expectedValue == true || expectedKey == true)
                     {
                         _tainted = true;
                     }
@@ -517,7 +517,7 @@ namespace VAR.Json
                     if (expectedKey != false)
                     {
                         attributeName = ParseString(true);
-                        c = _ctx.SkipWhite();
+                        _ctx.SkipWhite();
                         expectedKey = false;
                         expectedValue = true;
                     }
@@ -538,8 +538,8 @@ namespace VAR.Json
 
         private object ParseValue(int recusiveCount = 1)
         {
-            object token = null;
             char c = _ctx.SkipWhite();
+            object token;
             switch (c)
             {
                 case '"':
@@ -551,7 +551,7 @@ namespace VAR.Json
                     _tainted = true;
                     token = ParseSingleQuotedString();
                     break;
-                    
+
                 case '{':
                     Dictionary<string, object> obj = ParseObject(recusiveCount);
                     token = TryConvertToTypes(obj);
@@ -597,28 +597,6 @@ namespace VAR.Json
             return token;
         }
 
-        private string CleanIdentifier(string input)
-        {
-            int i;
-            char c;
-            i = input.Length - 1;
-            if (i < 0)
-            {
-                return input;
-            }
-            c = input[i];
-            while (char.IsLetter(c) || char.IsDigit(c) || c == '_')
-            {
-                i--;
-                if (i < 0)
-                {
-                    break;
-                }
-                c = input[i];
-            }
-            return input.Substring(i + 1);
-        }
-
         #endregion Private methods
 
         #region Public methods
@@ -646,6 +624,17 @@ namespace VAR.Json
             _tainted = true;
 
             return obj;
+        }
+
+        private static JsonParser _currentInstance = null;
+
+        public static object ParseText(string text)
+        {
+            if(_currentInstance == null)
+            {
+                _currentInstance = new JsonParser();
+            }
+            return _currentInstance.Parse(text);
         }
 
         #endregion Public methods

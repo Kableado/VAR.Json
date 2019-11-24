@@ -395,6 +395,33 @@ namespace VAR.Json
             return sbOutput.ToString();
         }
 
+        private static Dictionary<JsonWriterConfiguration, JsonWriter> _dictInstances = new Dictionary<JsonWriterConfiguration, JsonWriter>();
+
+        public static string WriteObject(object obj, JsonWriterConfiguration config = null)
+        {
+            
+            if(_dictInstances.ContainsKey(config) == false)
+            {
+                JsonWriter newJsonWriter = new JsonWriter(config);
+                _dictInstances.Add(config, newJsonWriter);
+            }
+            JsonWriter jsonWriter = _dictInstances[config];
+            return jsonWriter.Write(obj);
+        }
+
+        public static string WriteObject(object obj,
+            bool indent = false,
+            bool useTablForIndent = false,
+            int indentChars = 4,
+            int indentThresold = 3)
+        {
+            return WriteObject(obj, new JsonWriterConfiguration(
+                indent: indent, 
+                useTablForIndent: useTablForIndent, 
+                indentChars: indentChars, 
+                indentThresold: indentThresold));
+        }
+
         #endregion Public methods
     }
 }
