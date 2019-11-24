@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
-using System.Text;
 
 namespace VAR.Json
 {
@@ -44,7 +44,7 @@ namespace VAR.Json
 
         public override bool Equals(object other)
         {
-            if(other is JsonWriterConfiguration)
+            if (other is JsonWriterConfiguration)
             {
                 return Equals(other as JsonWriterConfiguration);
             }
@@ -101,52 +101,52 @@ namespace VAR.Json
             return false;
         }
 
-        private void WriteIndent(StringBuilder sbOutput, int level)
+        private void WriteIndent(TextWriter sbOutput, int level)
         {
             if (!_config.Indent)
             {
                 return;
             }
-            sbOutput.Append('\n');
+            sbOutput.Write('\n');
             if (_config.UseTabForIndent)
             {
-                for (int i = 0; i < level; i++) { sbOutput.Append('\t'); }
+                for (int i = 0; i < level; i++) { sbOutput.Write('\t'); }
             }
             else
             {
                 int n = level * _config.IndentChars;
-                for (int i = 0; i < n; i++) { sbOutput.Append(' '); }
+                for (int i = 0; i < n; i++) { sbOutput.Write(' '); }
             }
         }
 
-        private void WriteString(StringBuilder sbOutput, string str)
+        private void WriteString(TextWriter sbOutput, string str)
         {
-            sbOutput.Append('"');
+            sbOutput.Write('"');
             char c;
             int n = str.Length;
             for (int i = 0; i < n; i++)
             {
                 c = str[i];
-                if (c == '"') { sbOutput.Append("\\\""); }
-                else if (c == '\\') { sbOutput.Append("\\\\"); }
-                else if (c == '/') { sbOutput.Append("\\/"); }
-                else if (c == '\b') { sbOutput.Append("\\b"); }
-                else if (c == '\f') { sbOutput.Append("\\f"); }
-                else if (c == '\n') { sbOutput.Append("\\n"); }
-                else if (c == '\r') { sbOutput.Append("\\r"); }
-                else if (c == '\t') { sbOutput.Append("\\t"); }
-                else if (c < 32 || c >= 127) { sbOutput.AppendFormat("\\u{0:X04}", (int)c); }
-                else { sbOutput.Append(c); }
+                if (c == '"') { sbOutput.Write("\\\""); }
+                else if (c == '\\') { sbOutput.Write("\\\\"); }
+                else if (c == '/') { sbOutput.Write("\\/"); }
+                else if (c == '\b') { sbOutput.Write("\\b"); }
+                else if (c == '\f') { sbOutput.Write("\\f"); }
+                else if (c == '\n') { sbOutput.Write("\\n"); }
+                else if (c == '\r') { sbOutput.Write("\\r"); }
+                else if (c == '\t') { sbOutput.Write("\\t"); }
+                else if (c < 32 || c >= 127) { sbOutput.Write("\\u{0:X04}", (int)c); }
+                else { sbOutput.Write(c); }
             }
-            sbOutput.Append('"');
+            sbOutput.Write('"');
         }
 
-        private void WriteValue(StringBuilder sbOutput, object obj, List<object> parentLevels, bool useReflection)
+        private void WriteValue(TextWriter sbOutput, object obj, List<object> parentLevels, bool useReflection)
         {
             if (obj == null || obj is DBNull)
             {
                 // NULL
-                sbOutput.Append("null");
+                sbOutput.Write("null");
             }
             else if (
                 (obj is float) ||
@@ -157,7 +157,7 @@ namespace VAR.Json
                 false)
             {
                 // Numbers
-                sbOutput.Append(obj.ToString());
+                sbOutput.Write(obj.ToString());
             }
             else if (obj is string)
             {
@@ -167,14 +167,14 @@ namespace VAR.Json
             else if (obj is bool)
             {
                 // Booleans
-                sbOutput.Append(((bool)obj) ? "true" : "false");
+                sbOutput.Write(((bool)obj) ? "true" : "false");
             }
             else if (obj is DateTime)
             {
                 // DateTime
-                sbOutput.Append('"');
-                sbOutput.Append(((DateTime)obj).ToString("yyyy-MM-ddTHH:mm:ssZ"));
-                sbOutput.Append('"');
+                sbOutput.Write('"');
+                sbOutput.Write(((DateTime)obj).ToString("yyyy-MM-ddTHH:mm:ssZ"));
+                sbOutput.Write('"');
             }
             else if (obj is IDictionary)
             {
@@ -200,7 +200,7 @@ namespace VAR.Json
             }
         }
 
-        private void WriteList(StringBuilder sbOutput, object obj, List<object> parentLevels)
+        private void WriteList(TextWriter sbOutput, object obj, List<object> parentLevels)
         {
             IEnumerable list = (IEnumerable)obj;
             int n = 0;
@@ -219,13 +219,13 @@ namespace VAR.Json
             // Empty
             if (n == 0)
             {
-                sbOutput.Append("[ ]");
+                sbOutput.Write("[ ]");
                 return;
             }
 
             // Write array
             bool first = true;
-            sbOutput.Append("[ ");
+            sbOutput.Write("[ ");
             if (!isLeaf || n > _config.IndentThresold)
             {
                 WriteIndent(sbOutput, parentLevels.Count + 1);
@@ -234,7 +234,7 @@ namespace VAR.Json
             {
                 if (!first)
                 {
-                    sbOutput.Append(", ");
+                    sbOutput.Write(", ");
                     if (!isLeaf || n > _config.IndentThresold)
                     {
                         WriteIndent(sbOutput, parentLevels.Count + 1);
@@ -249,10 +249,10 @@ namespace VAR.Json
             {
                 WriteIndent(sbOutput, parentLevels.Count);
             }
-            sbOutput.Append(" ]");
+            sbOutput.Write(" ]");
         }
 
-        private void WriteObject(StringBuilder sbOutput, object obj, List<object> parentLevels)
+        private void WriteObject(TextWriter sbOutput, object obj, List<object> parentLevels)
         {
             IDictionary map = (IDictionary)obj;
             int n = map.Count;
@@ -260,7 +260,7 @@ namespace VAR.Json
             // Empty
             if (map.Count == 0)
             {
-                sbOutput.Append("{ }");
+                sbOutput.Write("{ }");
                 return;
             }
 
@@ -277,7 +277,7 @@ namespace VAR.Json
 
             // Write object
             bool first = true;
-            sbOutput.Append("{ ");
+            sbOutput.Write("{ ");
             if (!isLeaf || n > _config.IndentThresold)
             {
                 WriteIndent(sbOutput, parentLevels.Count + 1);
@@ -287,7 +287,7 @@ namespace VAR.Json
                 object value = map[key];
                 if (!first)
                 {
-                    sbOutput.Append(", ");
+                    sbOutput.Write(", ");
                     if (!isLeaf || n > _config.IndentThresold)
                     {
                         WriteIndent(sbOutput, parentLevels.Count + 1);
@@ -295,7 +295,7 @@ namespace VAR.Json
                 }
                 first = false;
                 WriteString(sbOutput, Convert.ToString(key));
-                sbOutput.Append(": ");
+                sbOutput.Write(": ");
                 parentLevels.Add(obj);
                 WriteValue(sbOutput, value, parentLevels, true);
                 parentLevels.Remove(obj);
@@ -304,10 +304,10 @@ namespace VAR.Json
             {
                 WriteIndent(sbOutput, parentLevels.Count);
             }
-            sbOutput.Append(" }");
+            sbOutput.Write(" }");
         }
 
-        private void WriteReflectedObject(StringBuilder sbOutput, object obj, List<object> parentLevels)
+        private void WriteReflectedObject(TextWriter sbOutput, object obj, List<object> parentLevels)
         {
             Type type = obj.GetType();
             PropertyInfo[] rawProperties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
@@ -323,7 +323,7 @@ namespace VAR.Json
             // Empty
             if (n == 0)
             {
-                sbOutput.Append("{ }");
+                sbOutput.Write("{ }");
                 return;
             }
 
@@ -341,7 +341,7 @@ namespace VAR.Json
 
             // Write object
             bool first = true;
-            sbOutput.Append("{ ");
+            sbOutput.Write("{ ");
             if (!isLeaf || n > _config.IndentThresold)
             {
                 WriteIndent(sbOutput, parentLevels.Count + 1);
@@ -357,7 +357,7 @@ namespace VAR.Json
                 }
                 if (!first)
                 {
-                    sbOutput.Append(", ");
+                    sbOutput.Write(", ");
                     if (!isLeaf || n > _config.IndentThresold)
                     {
                         WriteIndent(sbOutput, parentLevels.Count + 1);
@@ -365,7 +365,7 @@ namespace VAR.Json
                 }
                 first = false;
                 WriteString(sbOutput, property.Name);
-                sbOutput.Append(": ");
+                sbOutput.Write(": ");
                 parentLevels.Add(obj);
                 if (value != obj && parentLevels.Contains(value) == false)
                 {
@@ -381,7 +381,7 @@ namespace VAR.Json
             {
                 WriteIndent(sbOutput, parentLevels.Count);
             }
-            sbOutput.Append(" }");
+            sbOutput.Write(" }");
         }
 
         #endregion Private methods
@@ -390,7 +390,7 @@ namespace VAR.Json
 
         public string Write(object obj)
         {
-            StringBuilder sbOutput = new StringBuilder();
+            StringWriter sbOutput = new StringWriter();
             WriteValue(sbOutput, obj, new List<object>(), true);
             return sbOutput.ToString();
         }
