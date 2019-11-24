@@ -101,52 +101,52 @@ namespace VAR.Json
             return false;
         }
 
-        private void WriteIndent(TextWriter sbOutput, int level)
+        private void WriteIndent(TextWriter textWriter, int level)
         {
             if (!_config.Indent)
             {
                 return;
             }
-            sbOutput.Write('\n');
+            textWriter.Write('\n');
             if (_config.UseTabForIndent)
             {
-                for (int i = 0; i < level; i++) { sbOutput.Write('\t'); }
+                for (int i = 0; i < level; i++) { textWriter.Write('\t'); }
             }
             else
             {
                 int n = level * _config.IndentChars;
-                for (int i = 0; i < n; i++) { sbOutput.Write(' '); }
+                for (int i = 0; i < n; i++) { textWriter.Write(' '); }
             }
         }
 
-        private void WriteString(TextWriter sbOutput, string str)
+        private void WriteString(TextWriter textWriter, string str)
         {
-            sbOutput.Write('"');
+            textWriter.Write('"');
             char c;
             int n = str.Length;
             for (int i = 0; i < n; i++)
             {
                 c = str[i];
-                if (c == '"') { sbOutput.Write("\\\""); }
-                else if (c == '\\') { sbOutput.Write("\\\\"); }
-                else if (c == '/') { sbOutput.Write("\\/"); }
-                else if (c == '\b') { sbOutput.Write("\\b"); }
-                else if (c == '\f') { sbOutput.Write("\\f"); }
-                else if (c == '\n') { sbOutput.Write("\\n"); }
-                else if (c == '\r') { sbOutput.Write("\\r"); }
-                else if (c == '\t') { sbOutput.Write("\\t"); }
-                else if (c < 32 || c >= 127) { sbOutput.Write("\\u{0:X04}", (int)c); }
-                else { sbOutput.Write(c); }
+                if (c == '"') { textWriter.Write("\\\""); }
+                else if (c == '\\') { textWriter.Write("\\\\"); }
+                else if (c == '/') { textWriter.Write("\\/"); }
+                else if (c == '\b') { textWriter.Write("\\b"); }
+                else if (c == '\f') { textWriter.Write("\\f"); }
+                else if (c == '\n') { textWriter.Write("\\n"); }
+                else if (c == '\r') { textWriter.Write("\\r"); }
+                else if (c == '\t') { textWriter.Write("\\t"); }
+                else if (c < 32 || c >= 127) { textWriter.Write("\\u{0:X04}", (int)c); }
+                else { textWriter.Write(c); }
             }
-            sbOutput.Write('"');
+            textWriter.Write('"');
         }
 
-        private void WriteValue(TextWriter sbOutput, object obj, List<object> parentLevels, bool useReflection)
+        private void WriteValue(TextWriter textWriter, object obj, List<object> parentLevels, bool useReflection)
         {
             if (obj == null || obj is DBNull)
             {
                 // NULL
-                sbOutput.Write("null");
+                textWriter.Write("null");
             }
             else if (
                 (obj is float) ||
@@ -157,50 +157,50 @@ namespace VAR.Json
                 false)
             {
                 // Numbers
-                sbOutput.Write(obj.ToString());
+                textWriter.Write(obj.ToString());
             }
             else if (obj is string)
             {
                 // Strings
-                WriteString(sbOutput, (string)obj);
+                WriteString(textWriter, (string)obj);
             }
             else if (obj is bool)
             {
                 // Booleans
-                sbOutput.Write(((bool)obj) ? "true" : "false");
+                textWriter.Write(((bool)obj) ? "true" : "false");
             }
             else if (obj is DateTime)
             {
                 // DateTime
-                sbOutput.Write('"');
-                sbOutput.Write(((DateTime)obj).ToString("yyyy-MM-ddTHH:mm:ssZ"));
-                sbOutput.Write('"');
+                textWriter.Write('"');
+                textWriter.Write(((DateTime)obj).ToString("yyyy-MM-ddTHH:mm:ssZ"));
+                textWriter.Write('"');
             }
             else if (obj is IDictionary)
             {
                 // Objects
-                WriteObject(sbOutput, obj, parentLevels);
+                WriteObject(textWriter, obj, parentLevels);
             }
             else if (obj is IEnumerable)
             {
                 // Array/List
-                WriteList(sbOutput, obj, parentLevels);
+                WriteList(textWriter, obj, parentLevels);
             }
             else
             {
                 if (useReflection)
                 {
                     // Reflected object
-                    WriteReflectedObject(sbOutput, obj, parentLevels);
+                    WriteReflectedObject(textWriter, obj, parentLevels);
                 }
                 else
                 {
-                    WriteString(sbOutput, Convert.ToString(obj));
+                    WriteString(textWriter, Convert.ToString(obj));
                 }
             }
         }
 
-        private void WriteList(TextWriter sbOutput, object obj, List<object> parentLevels)
+        private void WriteList(TextWriter textWriter, object obj, List<object> parentLevels)
         {
             IEnumerable list = (IEnumerable)obj;
             int n = 0;
@@ -219,40 +219,40 @@ namespace VAR.Json
             // Empty
             if (n == 0)
             {
-                sbOutput.Write("[ ]");
+                textWriter.Write("[ ]");
                 return;
             }
 
             // Write array
             bool first = true;
-            sbOutput.Write("[ ");
+            textWriter.Write("[ ");
             if (!isLeaf || n > _config.IndentThresold)
             {
-                WriteIndent(sbOutput, parentLevels.Count + 1);
+                WriteIndent(textWriter, parentLevels.Count + 1);
             }
             foreach (object childObj in list)
             {
                 if (!first)
                 {
-                    sbOutput.Write(", ");
+                    textWriter.Write(", ");
                     if (!isLeaf || n > _config.IndentThresold)
                     {
-                        WriteIndent(sbOutput, parentLevels.Count + 1);
+                        WriteIndent(textWriter, parentLevels.Count + 1);
                     }
                 }
                 first = false;
                 parentLevels.Add(obj);
-                WriteValue(sbOutput, childObj, parentLevels, true);
+                WriteValue(textWriter, childObj, parentLevels, true);
                 parentLevels.Remove(obj);
             }
             if (!isLeaf || n > _config.IndentThresold)
             {
-                WriteIndent(sbOutput, parentLevels.Count);
+                WriteIndent(textWriter, parentLevels.Count);
             }
-            sbOutput.Write(" ]");
+            textWriter.Write(" ]");
         }
 
-        private void WriteObject(TextWriter sbOutput, object obj, List<object> parentLevels)
+        private void WriteObject(TextWriter textWriter, object obj, List<object> parentLevels)
         {
             IDictionary map = (IDictionary)obj;
             int n = map.Count;
@@ -260,7 +260,7 @@ namespace VAR.Json
             // Empty
             if (map.Count == 0)
             {
-                sbOutput.Write("{ }");
+                textWriter.Write("{ }");
                 return;
             }
 
@@ -277,37 +277,37 @@ namespace VAR.Json
 
             // Write object
             bool first = true;
-            sbOutput.Write("{ ");
+            textWriter.Write("{ ");
             if (!isLeaf || n > _config.IndentThresold)
             {
-                WriteIndent(sbOutput, parentLevels.Count + 1);
+                WriteIndent(textWriter, parentLevels.Count + 1);
             }
             foreach (object key in map.Keys)
             {
                 object value = map[key];
                 if (!first)
                 {
-                    sbOutput.Write(", ");
+                    textWriter.Write(", ");
                     if (!isLeaf || n > _config.IndentThresold)
                     {
-                        WriteIndent(sbOutput, parentLevels.Count + 1);
+                        WriteIndent(textWriter, parentLevels.Count + 1);
                     }
                 }
                 first = false;
-                WriteString(sbOutput, Convert.ToString(key));
-                sbOutput.Write(": ");
+                WriteString(textWriter, Convert.ToString(key));
+                textWriter.Write(": ");
                 parentLevels.Add(obj);
-                WriteValue(sbOutput, value, parentLevels, true);
+                WriteValue(textWriter, value, parentLevels, true);
                 parentLevels.Remove(obj);
             }
             if (!isLeaf || n > _config.IndentThresold)
             {
-                WriteIndent(sbOutput, parentLevels.Count);
+                WriteIndent(textWriter, parentLevels.Count);
             }
-            sbOutput.Write(" }");
+            textWriter.Write(" }");
         }
 
-        private void WriteReflectedObject(TextWriter sbOutput, object obj, List<object> parentLevels)
+        private void WriteReflectedObject(TextWriter textWriter, object obj, List<object> parentLevels)
         {
             Type type = obj.GetType();
             PropertyInfo[] rawProperties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
@@ -323,7 +323,7 @@ namespace VAR.Json
             // Empty
             if (n == 0)
             {
-                sbOutput.Write("{ }");
+                textWriter.Write("{ }");
                 return;
             }
 
@@ -341,10 +341,10 @@ namespace VAR.Json
 
             // Write object
             bool first = true;
-            sbOutput.Write("{ ");
+            textWriter.Write("{ ");
             if (!isLeaf || n > _config.IndentThresold)
             {
-                WriteIndent(sbOutput, parentLevels.Count + 1);
+                WriteIndent(textWriter, parentLevels.Count + 1);
             }
             foreach (PropertyInfo property in properties)
             {
@@ -357,42 +357,52 @@ namespace VAR.Json
                 }
                 if (!first)
                 {
-                    sbOutput.Write(", ");
+                    textWriter.Write(", ");
                     if (!isLeaf || n > _config.IndentThresold)
                     {
-                        WriteIndent(sbOutput, parentLevels.Count + 1);
+                        WriteIndent(textWriter, parentLevels.Count + 1);
                     }
                 }
                 first = false;
-                WriteString(sbOutput, property.Name);
-                sbOutput.Write(": ");
+                WriteString(textWriter, property.Name);
+                textWriter.Write(": ");
                 parentLevels.Add(obj);
                 if (value != obj && parentLevels.Contains(value) == false)
                 {
-                    WriteValue(sbOutput, value, parentLevels, false);
+                    WriteValue(textWriter, value, parentLevels, false);
                 }
                 else
                 {
-                    WriteValue(sbOutput, null, parentLevels, false);
+                    WriteValue(textWriter, null, parentLevels, false);
                 }
                 parentLevels.Remove(obj);
             }
             if (!isLeaf || n > _config.IndentThresold)
             {
-                WriteIndent(sbOutput, parentLevels.Count);
+                WriteIndent(textWriter, parentLevels.Count);
             }
-            sbOutput.Write(" }");
+            textWriter.Write(" }");
         }
 
         #endregion Private methods
 
         #region Public methods
 
+        public TextWriter Write(object obj, TextWriter textWriter)
+        {
+            if (textWriter == null)
+            {
+                textWriter = new StringWriter();
+            }
+            WriteValue(textWriter, obj, new List<object>(), true);
+            return textWriter;
+        }
+
         public string Write(object obj)
         {
-            StringWriter sbOutput = new StringWriter();
-            WriteValue(sbOutput, obj, new List<object>(), true);
-            return sbOutput.ToString();
+            StringWriter textWriter = new StringWriter();
+            WriteValue(textWriter, obj, new List<object>(), true);
+            return textWriter.ToString();
         }
 
         private static Dictionary<JsonWriterConfiguration, JsonWriter> _dictInstances = new Dictionary<JsonWriterConfiguration, JsonWriter>();
