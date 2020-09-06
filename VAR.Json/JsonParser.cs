@@ -421,7 +421,7 @@ namespace VAR.Json
             }
         }
 
-        private List<object> ParseArray(int recursiveCount = 1)
+        private object ParseArray(int recursiveCount = 1)
         {
             // StrictRules: Mark as tainted when MaxRecursiveCount is exceeded
             if (recursiveCount >= MaxRecursiveCount) { _tainted = true; }
@@ -429,6 +429,9 @@ namespace VAR.Json
             bool correct = false;
             char c = _ctx.SkipWhite();
             List<object> array = new List<object>();
+            Type arrayContentType = null;
+            bool hasSameType = true;
+            bool hasNulls = false;
             if (c == '[')
             {
                 _ctx.Next();
@@ -457,19 +460,44 @@ namespace VAR.Json
                 {
                     // StrictRules: Mark as tainted when unexpected value on array
                     if (expectValue == false) { _tainted = true; }
-
-                    array.Add(ParseValue(recursiveCount + 1));
+                    object value = ParseValue(recursiveCount + 1);
+                    array.Add(value);
                     expectValue = false;
+
+                    if (hasSameType)
+                    {
+                        Type valueType = value?.GetType();
+                        if (valueType == null) { hasNulls = true; }
+                        if (arrayContentType == null || arrayContentType == valueType)
+                        {
+                            arrayContentType = valueType;
+                        }
+                        else
+                        {
+                            hasSameType = false;
+                        }
+                    }
                 }
             } while (!_ctx.AtEnd());
             if (correct == false)
             {
                 _tainted = true;
             }
-            return array;
+            object result = array;
+            bool isNullableType = arrayContentType?.IsClass == true;
+            if (hasSameType && arrayContentType != null && (isNullableType == true || (isNullableType == false && hasNulls == false)))
+            {
+                var enumerableType = typeof(System.Linq.Enumerable);
+                var castMethod = enumerableType.GetMethod("Cast").MakeGenericMethod(arrayContentType);
+                var toListMethod = enumerableType.GetMethod("ToList").MakeGenericMethod(arrayContentType);
+                IEnumerable<object> itemsToCast = array;
+                var castedItems = castMethod.Invoke(null, new[] { itemsToCast });
+                result = toListMethod.Invoke(null, new[] { castedItems });
+            }
+            return result;
         }
 
-        private Dictionary<string, object> ParseObject(int recursiveCount = 1)
+        private object ParseObject(int recursiveCount = 1)
         {
             // StrictRules: Mark as tainted when MaxRecursiveCount is exceeded
             if (recursiveCount >= MaxRecursiveCount) { _tainted = true; }
@@ -538,7 +566,8 @@ namespace VAR.Json
             {
                 _tainted = true;
             }
-            return obj;
+            object result = TryConvertToTypes(obj);
+            return result;
         }
 
         private object ParseValue(int recusiveCount = 1)
@@ -558,8 +587,7 @@ namespace VAR.Json
                     break;
 
                 case '{':
-                    Dictionary<string, object> obj = ParseObject(recusiveCount);
-                    token = TryConvertToTypes(obj);
+                    token = ParseObject(recusiveCount);
                     break;
 
                 case '[':

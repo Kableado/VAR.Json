@@ -1,10 +1,124 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System.Collections.Generic;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace VAR.Json.Tests
 {
     [TestClass()]
     public class JsonParser_Tests
     {
+        #region Parse
+
+        public class SwallowObject
+        {
+            public string Text { get; set; }
+            public int Number { get; set; }
+        }
+
+        [TestMethod()]
+        public void Parse__SwallowObject()
+        {
+            JsonParser parser = new JsonParser();
+            parser.KnownTypes.Add(typeof(SwallowObject));
+            SwallowObject result = parser.Parse(@"{""Text"": ""AAAA"", ""Number"": 42}") as SwallowObject;
+            Assert.AreEqual(false, parser.Tainted);
+            Assert.AreEqual("AAAA", result.Text);
+            Assert.AreEqual(42, result.Number);
+        }
+
+        public class DeeperObject_L1
+        {
+            public string Name { get; set; }
+            public SwallowObject Object { get; set; }
+        }
+
+        [TestMethod()]
+        public void Parse__DeeperObject_L1()
+        {
+            JsonParser parser = new JsonParser();
+            parser.KnownTypes.Add(typeof(SwallowObject));
+            parser.KnownTypes.Add(typeof(DeeperObject_L1));
+            DeeperObject_L1 result = parser.Parse(@"{""Name"": ""Thing"", ""Object"": {""Text"": ""AAAA"", ""Number"": 42}}") as DeeperObject_L1;
+            Assert.AreEqual(false, parser.Tainted);
+            Assert.AreEqual("Thing", result.Name);
+            Assert.AreEqual("AAAA", result.Object.Text);
+            Assert.AreEqual(42, result.Object.Number);
+        }
+
+        public class DeeperObject_L2
+        {
+            public int Count { get; set; }
+            public DeeperObject_L1 Object { get; set; }
+        }
+
+        [TestMethod()]
+        public void Parse__DeeperObject_L2()
+        {
+            JsonParser parser = new JsonParser();
+            parser.KnownTypes.Add(typeof(SwallowObject));
+            parser.KnownTypes.Add(typeof(DeeperObject_L1));
+            parser.KnownTypes.Add(typeof(DeeperObject_L2));
+            DeeperObject_L2 result = parser.Parse(@"{""Count"": 1, ""Object"": {""Name"": ""Thing"", ""Object"": {""Text"": ""AAAA"", ""Number"": 42}}}") as DeeperObject_L2;
+            Assert.AreEqual(false, parser.Tainted);
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual("Thing", result.Object.Name);
+            Assert.AreEqual("AAAA", result.Object.Object.Text);
+            Assert.AreEqual(42, result.Object.Object.Number);
+        }
+
+        [TestMethod()]
+        public void Parse__SwallowObjectArray()
+        {
+            JsonParser parser = new JsonParser();
+            parser.KnownTypes.Add(typeof(SwallowObject));
+            List<SwallowObject> result = parser.Parse(@"[{""Text"": ""AAAA"", ""Number"": 42}]") as List<SwallowObject>;
+            Assert.AreEqual(false, parser.Tainted);
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual("AAAA", result[0].Text);
+            Assert.AreEqual(42, result[0].Number);
+        }
+
+        public class DeeperObjectArray_L1
+        {
+            public int Count { get; set; }
+            public List<SwallowObject> Array { get; set; }
+        }
+
+        [TestMethod()]
+        public void Parse__DeeperObjectArray_L1()
+        {
+            JsonParser parser = new JsonParser();
+            parser.KnownTypes.Add(typeof(SwallowObject));
+            parser.KnownTypes.Add(typeof(DeeperObjectArray_L1));
+            DeeperObjectArray_L1 result = parser.Parse(@"{""Count"": 1, ""Array"": [{""Text"": ""AAAA"", ""Number"": 42}]}") as DeeperObjectArray_L1;
+            Assert.AreEqual(false, parser.Tainted);
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual("AAAA", result.Array[0].Text);
+            Assert.AreEqual(42, result.Array[0].Number);
+        }
+
+        public class DeeperObjectArray_L2
+        {
+            public string Name { get; set; }
+            public List<DeeperObjectArray_L1> Objects { get; set; }
+        }
+
+        [TestMethod()]
+        public void Parse__DeeperObjectArray_L2()
+        {
+            JsonParser parser = new JsonParser();
+            parser.KnownTypes.Add(typeof(SwallowObject));
+            parser.KnownTypes.Add(typeof(DeeperObjectArray_L1));
+            parser.KnownTypes.Add(typeof(DeeperObjectArray_L2));
+            DeeperObjectArray_L2 result = parser.Parse(@"{""Name"": ""Thing"", ""Objects"": [{""Count"": 1, ""Array"": [{""Text"": ""AAAA"", ""Number"": 42}]}]}") as DeeperObjectArray_L2;
+            Assert.AreEqual(false, parser.Tainted);
+            Assert.AreEqual("Thing", result.Name);
+            Assert.AreEqual(1, result.Objects[0].Count);
+            Assert.AreEqual("AAAA", result.Objects[0].Array[0].Text);
+            Assert.AreEqual(42, result.Objects[0].Array[0].Number);
+        }
+
+        #endregion Parse
+
         #region Validity tests
 
         [TestMethod()]
