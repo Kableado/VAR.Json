@@ -92,7 +92,14 @@ namespace VAR.Json
                     }
                     else
                     {
-                        valueDest = Convert.ChangeType(obj[prop.Name], effectiveType);
+                        try
+                        {
+                            valueDest = Convert.ChangeType(obj[prop.Name], effectiveType);
+                        }
+                        catch (Exception)
+                        {
+                            continue;
+                        }
                     }
                     prop.SetValue(newObj, valueDest, null);
                 }
