@@ -173,7 +173,7 @@ namespace VAR.Json
             {
                 // DateTime
                 textWriter.Write('"');
-                textWriter.Write(((DateTime)obj).ToString("yyyy-MM-ddTHH:mm:ssZ"));
+                textWriter.Write(((DateTime)obj).ToString("yyyy-MM-ddTHH:mm:ss"));
                 textWriter.Write('"');
             }
             else if (obj is IDictionary)
