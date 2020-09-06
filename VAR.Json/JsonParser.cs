@@ -115,7 +115,12 @@ namespace VAR.Json
             }
             if (bestMatch != null)
             {
-                return ConvertToType(obj, bestMatch);
+                try
+                {
+                    object newObj = ConvertToType(obj, bestMatch);
+                    return newObj;
+                }
+                catch (Exception) { } /* Nom Nom */
             }
             return obj;
         }
