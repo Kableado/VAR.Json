@@ -141,7 +141,7 @@ namespace VAR.Json
             textWriter.Write('"');
         }
 
-        private void WriteValue(TextWriter textWriter, object obj, List<object> parentLevels, bool useReflection)
+        private void WriteValue(TextWriter textWriter, object obj, List<object> parentLevels)
         {
             if (obj == null || obj is DBNull)
             {
@@ -188,15 +188,8 @@ namespace VAR.Json
             }
             else
             {
-                if (useReflection)
-                {
-                    // Reflected object
-                    WriteReflectedObject(textWriter, obj, parentLevels);
-                }
-                else
-                {
-                    WriteString(textWriter, Convert.ToString(obj));
-                }
+                // Reflected object
+                WriteReflectedObject(textWriter, obj, parentLevels);
             }
         }
 
@@ -242,7 +235,7 @@ namespace VAR.Json
                 }
                 first = false;
                 parentLevels.Add(obj);
-                WriteValue(textWriter, childObj, parentLevels, true);
+                WriteValue(textWriter, childObj, parentLevels);
                 parentLevels.Remove(obj);
             }
             if (!isLeaf || n > _config.IndentThresold)
@@ -297,7 +290,7 @@ namespace VAR.Json
                 WriteString(textWriter, Convert.ToString(key));
                 textWriter.Write(": ");
                 parentLevels.Add(obj);
-                WriteValue(textWriter, value, parentLevels, true);
+                WriteValue(textWriter, value, parentLevels);
                 parentLevels.Remove(obj);
             }
             if (!isLeaf || n > _config.IndentThresold)
@@ -369,11 +362,11 @@ namespace VAR.Json
                 parentLevels.Add(obj);
                 if (value != obj && parentLevels.Contains(value) == false)
                 {
-                    WriteValue(textWriter, value, parentLevels, false);
+                    WriteValue(textWriter, value, parentLevels);
                 }
                 else
                 {
-                    WriteValue(textWriter, null, parentLevels, false);
+                    WriteValue(textWriter, null, parentLevels);
                 }
                 parentLevels.Remove(obj);
             }
@@ -394,14 +387,14 @@ namespace VAR.Json
             {
                 textWriter = new StringWriter();
             }
-            WriteValue(textWriter, obj, new List<object>(), true);
+            WriteValue(textWriter, obj, new List<object>());
             return textWriter;
         }
 
         public string Write(object obj)
         {
             StringWriter textWriter = new StringWriter();
-            WriteValue(textWriter, obj, new List<object>(), true);
+            WriteValue(textWriter, obj, new List<object>());
             return textWriter.ToString();
         }
 
