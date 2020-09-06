@@ -5,23 +5,23 @@
 ### VAR.Json
 Add the resulting assembly as reference in your projects, and this line on code:
 
-	using VAR.Json;
+    using VAR.Json;
 
 Parse any string with JSON content:
-	
-	var jsonParser = new JsonParser();
-	object result = jsonParser("{\"Test\": 1}");
+    
+    var jsonParser = new JsonParser();
+    object result = jsonParser("{\"Test\": 1}");
 
 Serialize any object to JSON:
-	
-	var jsonWriter = new JsonWriter();
-	string jsonText = jsonWriter(new List<int>{1, 2, 3, 4});
+    
+    var jsonWriter = new JsonWriter();
+    string jsonText = jsonWriter(new List<int>{1, 2, 3, 4});
 
 ## Building
 A Visual Studio 2015 solutions are provided. Simply, click build on the IDE.
 
 A .nuget package can be build using:
-	VAR.Json\Build.NuGet.cmd
+    VAR.Json\Build.NuGet.cmd
 
 ## Contributing
 1. Fork it!
