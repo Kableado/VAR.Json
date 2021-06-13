@@ -1,14 +1,33 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <OutputType>Library</OutputType>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <Deterministic>false</Deterministic>
+    <IsPackable>true</IsPackable>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PackageId>VAR.Json</PackageId>
+    <Title>VAR.Json</Title>
+    <Version>1.2.1</Version>
+    <Description>.Net library for JSON parsing</Description>
+    <Authors>VAR</Authors>
+    <Company>VAR</Company>
+    <Copyright>Copyright © VAR 2016-2021</Copyright>
+    <RequireLicenseAcceptance>false</RequireLicenseAcceptance>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <PackageProjectUrl>https://github.com/Kableado/VAR.Json</PackageProjectUrl>
+    <PackageTags>JSON;JSON Library</PackageTags>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="NuGet.CommandLine" Version="5.9.1">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
+    <Content Include="..\LICENSE.txt" Link="LICENSE.txt" Pack="true" PackagePath=""/>
   </ItemGroup>
+  <Target Name="CopyPackage" AfterTargets="Pack">
+    <Copy
+      SourceFiles="$(OutputPath)..\$(PackageId).$(PackageVersion).nupkg"
+      DestinationFolder="Nuget\"
+      />
+  </Target>
+
 </Project>
