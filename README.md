@@ -41,10 +41,7 @@ Person jsonText = jsonParser.Parse("{ \"Name\": \"John", \"Surname\": \"Doe\", \
 ## Building
 A Visual Studio solution is provided. Simply, click build on the IDE.
 
-A .nuget package can be build using:
-```cmd
-VAR.Json\Build.NuGet.cmd
-```
+The build generates a DLL and a Nuget package.
 
 ## Contributing
 1. Fork it!
