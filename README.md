@@ -5,23 +5,46 @@
 ### VAR.Json
 Add the resulting assembly as reference in your projects, and this line on code:
 
-    using VAR.Json;
+```csharp
+using VAR.Json;
+```
 
 Parse any string with JSON content:
-    
-    var jsonParser = new JsonParser();
-    object result = jsonParser("{\"Test\": 1}");
+```csharp
+object result = JsonParser.ParseText("{\"Test\": 1}");
+```
 
 Serialize any object to JSON:
-    
-    var jsonWriter = new JsonWriter();
-    string jsonText = jsonWriter(new List<int>{1, 2, 3, 4});
+```csharp
+string jsonText = JsonWriter.WriteObject(new List<int>{1, 2, 3, 4});
+```
+
+### VAR.Json.JsonParser
+This object can be invoked with a list of types used to cast the json objects.
+
+
+```csharp
+
+class Person
+{
+    public string Name { get; set; }
+    public string Surname { get; set; }
+    public DateTime DateOfBirth { get; set; }
+}
+
+JsonParser jsonParser = new JsonParser();
+jsonParser.KnownTypes.Add(typeof(Person));
+Person jsonText = jsonParser.Parse("{ \"Name\": \"John", \"Surname\": \"Doe\", \"DateOfBirth\": \"1970-01-01\"}") as Person;
+```
+
 
 ## Building
-A Visual Studio 2015 solutions are provided. Simply, click build on the IDE.
+A Visual Studio solution is provided. Simply, click build on the IDE.
 
 A .nuget package can be build using:
-    VAR.Json\Build.NuGet.cmd
+```cmd
+VAR.Json\Build.NuGet.cmd
+```
 
 ## Contributing
 1. Fork it!
@@ -37,7 +60,7 @@ A .nuget package can be build using:
 
     The MIT License (MIT)
 
-    Copyright (c) 2016-2017 Valeriano Alfonso Rodriguez
+    Copyright (c) 2016-2021 Valeriano Alfonso Rodriguez
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to deal

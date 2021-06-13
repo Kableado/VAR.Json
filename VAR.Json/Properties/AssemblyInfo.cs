@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("VAR")]
 [assembly: AssemblyProduct("VAR.Json")]
-[assembly: AssemblyCopyright("Copyright © VAR 2016-2017")]
+[assembly: AssemblyCopyright("Copyright © VAR 2016-2021")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 [assembly: ComVisible(false)]
