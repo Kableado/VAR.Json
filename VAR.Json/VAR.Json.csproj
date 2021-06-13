@@ -8,7 +8,7 @@
   <PropertyGroup>
     <PackageId>VAR.Json</PackageId>
     <Title>VAR.Json</Title>
-    <Version>1.2.1</Version>
+    <Version>1.2.2</Version>
     <Description>.Net library for JSON parsing</Description>
     <Authors>VAR</Authors>
     <Company>VAR</Company>
