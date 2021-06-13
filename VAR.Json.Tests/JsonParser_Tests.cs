@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 
 namespace VAR.Json.Tests
 {
-    [TestClass()]
+    [TestFixture()]
     public class JsonParser_Tests
     {
         #region Parse
@@ -14,7 +14,7 @@ namespace VAR.Json.Tests
             public int Number { get; set; }
         }
 
-        [TestMethod()]
+        [Test()]
         public void Parse__SwallowObject()
         {
             JsonParser parser = new JsonParser();
@@ -31,7 +31,7 @@ namespace VAR.Json.Tests
             public SwallowObject Object { get; set; }
         }
 
-        [TestMethod()]
+        [Test()]
         public void Parse__DeeperObject_L1()
         {
             JsonParser parser = new JsonParser();
@@ -50,7 +50,7 @@ namespace VAR.Json.Tests
             public DeeperObject_L1 Object { get; set; }
         }
 
-        [TestMethod()]
+        [Test()]
         public void Parse__DeeperObject_L2()
         {
             JsonParser parser = new JsonParser();
@@ -65,7 +65,7 @@ namespace VAR.Json.Tests
             Assert.AreEqual(42, result.Object.Object.Number);
         }
 
-        [TestMethod()]
+        [Test()]
         public void Parse__SwallowObjectArray()
         {
             JsonParser parser = new JsonParser();
@@ -83,7 +83,7 @@ namespace VAR.Json.Tests
             public List<SwallowObject> Array { get; set; }
         }
 
-        [TestMethod()]
+        [Test()]
         public void Parse__DeeperObjectArray_L1()
         {
             JsonParser parser = new JsonParser();
@@ -102,7 +102,7 @@ namespace VAR.Json.Tests
             public List<DeeperObjectArray_L1> Objects { get; set; }
         }
 
-        [TestMethod()]
+        [Test()]
         public void Parse__DeeperObjectArray_L2()
         {
             JsonParser parser = new JsonParser();
@@ -121,7 +121,7 @@ namespace VAR.Json.Tests
 
         #region Validity tests
 
-        [TestMethod()]
+        [Test()]
         public void Parse__Validity_Fail01()
         {
             JsonParser parser = new JsonParser();
@@ -129,7 +129,7 @@ namespace VAR.Json.Tests
             Assert.AreEqual(true, parser.Tainted);
         }
 
-        [TestMethod()]
+        [Test()]
         public void Parse__Validity_Fail02()
         {
             JsonParser parser = new JsonParser();
@@ -137,7 +137,7 @@ namespace VAR.Json.Tests
             Assert.AreEqual(true, parser.Tainted);
         }
 
-        [TestMethod()]
+        [Test()]
         public void Parse__Validity_Fail03()
         {
             JsonParser parser = new JsonParser();
@@ -145,7 +145,7 @@ namespace VAR.Json.Tests
             Assert.AreEqual(true, parser.Tainted);
         }
 
-        [TestMethod()]
+        [Test()]
         public void Parse__Validity_Fail04()
         {
             JsonParser parser = new JsonParser();
@@ -153,7 +153,7 @@ namespace VAR.Json.Tests
             Assert.AreEqual(true, parser.Tainted);
         }
 
-        [TestMethod()]
+        [Test()]
         public void Parse__Validity_Fail05()
         {
             JsonParser parser = new JsonParser();
@@ -161,7 +161,7 @@ namespace VAR.Json.Tests
             Assert.AreEqual(true, parser.Tainted);
         }
 
-        [TestMethod()]
+        [Test()]
         public void Parse__Validity_Fail06()
         {
             JsonParser parser = new JsonParser();
@@ -169,7 +169,7 @@ namespace VAR.Json.Tests
             Assert.AreEqual(true, parser.Tainted);
         }
 
-        [TestMethod()]
+        [Test()]
         public void Parse__Validity_Fail07()
         {
             JsonParser parser = new JsonParser();
@@ -177,7 +177,7 @@ namespace VAR.Json.Tests
             Assert.AreEqual(true, parser.Tainted);
         }
 
-        [TestMethod()]
+        [Test()]
         public void Parse__Validity_Fail08()
         {
             JsonParser parser = new JsonParser();
@@ -185,7 +185,7 @@ namespace VAR.Json.Tests
             Assert.AreEqual(true, parser.Tainted);
         }
 
-        [TestMethod()]
+        [Test()]
         public void Parse__Validity_Fail09()
         {
             JsonParser parser = new JsonParser();
@@ -193,7 +193,7 @@ namespace VAR.Json.Tests
             Assert.AreEqual(true, parser.Tainted);
         }
 
-        [TestMethod()]
+        [Test()]
         public void Parse__Validity_Fail10()
         {
             JsonParser parser = new JsonParser();
@@ -201,7 +201,7 @@ namespace VAR.Json.Tests
             Assert.AreEqual(true, parser.Tainted);
         }
 
-        [TestMethod()]
+        [Test()]
         public void Parse__Validity_Fail11()
         {
             JsonParser parser = new JsonParser();
@@ -209,7 +209,7 @@ namespace VAR.Json.Tests
             Assert.AreEqual(true, parser.Tainted);
         }
 
-        [TestMethod()]
+        [Test()]
         public void Parse__Validity_Fail12()
         {
             JsonParser parser = new JsonParser();
@@ -217,7 +217,7 @@ namespace VAR.Json.Tests
             Assert.AreEqual(true, parser.Tainted);
         }
 
-        [TestMethod()]
+        [Test()]
         public void Parse__Validity_Fail13()
         {
             JsonParser parser = new JsonParser();
@@ -225,7 +225,7 @@ namespace VAR.Json.Tests
             Assert.AreEqual(true, parser.Tainted);
         }
 
-        [TestMethod()]
+        [Test()]
         public void Parse__Validity_Fail14()
         {
             JsonParser parser = new JsonParser();
@@ -233,7 +233,7 @@ namespace VAR.Json.Tests
             Assert.AreEqual(true, parser.Tainted);
         }
 
-        [TestMethod()]
+        [Test()]
         public void Parse__Validity_Fail15()
         {
             JsonParser parser = new JsonParser();
@@ -241,7 +241,7 @@ namespace VAR.Json.Tests
             Assert.AreEqual(true, parser.Tainted);
         }
 
-        [TestMethod()]
+        [Test()]
         public void Parse__Validity_Fail16()
         {
             JsonParser parser = new JsonParser();
@@ -249,7 +249,7 @@ namespace VAR.Json.Tests
             Assert.AreEqual(true, parser.Tainted);
         }
 
-        [TestMethod()]
+        [Test()]
         public void Parse__Validity_Fail17()
         {
             JsonParser parser = new JsonParser();
@@ -257,7 +257,7 @@ namespace VAR.Json.Tests
             Assert.AreEqual(true, parser.Tainted);
         }
 
-        [TestMethod()]
+        [Test()]
         public void Parse__Validity_Fail18()
         {
             JsonParser parser = new JsonParser();
@@ -265,7 +265,7 @@ namespace VAR.Json.Tests
             Assert.AreEqual(true, parser.Tainted);
         }
 
-        [TestMethod()]
+        [Test()]
         public void Parse__Validity_Fail19()
         {
             JsonParser parser = new JsonParser();
@@ -273,7 +273,7 @@ namespace VAR.Json.Tests
             Assert.AreEqual(true, parser.Tainted);
         }
 
-        [TestMethod()]
+        [Test()]
         public void Parse__Validity_Fail20()
         {
             JsonParser parser = new JsonParser();
@@ -281,7 +281,7 @@ namespace VAR.Json.Tests
             Assert.AreEqual(true, parser.Tainted);
         }
 
-        [TestMethod()]
+        [Test()]
         public void Parse__Validity_Fail21()
         {
             JsonParser parser = new JsonParser();
@@ -289,7 +289,7 @@ namespace VAR.Json.Tests
             Assert.AreEqual(true, parser.Tainted);
         }
 
-        [TestMethod()]
+        [Test()]
         public void Parse__Validity_Fail22()
         {
             JsonParser parser = new JsonParser();
@@ -297,7 +297,7 @@ namespace VAR.Json.Tests
             Assert.AreEqual(true, parser.Tainted);
         }
 
-        [TestMethod()]
+        [Test()]
         public void Parse__Validity_Fail23()
         {
             JsonParser parser = new JsonParser();
@@ -305,7 +305,7 @@ namespace VAR.Json.Tests
             Assert.AreEqual(true, parser.Tainted);
         }
 
-        [TestMethod()]
+        [Test()]
         public void Parse__Validity_Fail24()
         {
             JsonParser parser = new JsonParser();
@@ -313,7 +313,7 @@ namespace VAR.Json.Tests
             Assert.AreEqual(true, parser.Tainted);
         }
 
-        [TestMethod()]
+        [Test()]
         public void Parse__Validity_Fail25()
         {
             JsonParser parser = new JsonParser();
@@ -321,7 +321,7 @@ namespace VAR.Json.Tests
             Assert.AreEqual(true, parser.Tainted);
         }
 
-        [TestMethod()]
+        [Test()]
         public void Parse__Validity_Fail26()
         {
             JsonParser parser = new JsonParser();
@@ -329,7 +329,7 @@ namespace VAR.Json.Tests
             Assert.AreEqual(true, parser.Tainted);
         }
 
-        [TestMethod()]
+        [Test()]
         public void Parse__Validity_Fail27()
         {
             JsonParser parser = new JsonParser();
@@ -338,7 +338,7 @@ break""]");
             Assert.AreEqual(true, parser.Tainted);
         }
 
-        [TestMethod()]
+        [Test()]
         public void Parse__Validity_Fail28()
         {
             JsonParser parser = new JsonParser();
@@ -347,7 +347,7 @@ break""]");
             Assert.AreEqual(true, parser.Tainted);
         }
 
-        [TestMethod()]
+        [Test()]
         public void Parse__Validity_Fail29()
         {
             JsonParser parser = new JsonParser();
@@ -355,7 +355,7 @@ break""]");
             Assert.AreEqual(true, parser.Tainted);
         }
 
-        [TestMethod()]
+        [Test()]
         public void Parse__Validity_Fail30()
         {
             JsonParser parser = new JsonParser();
@@ -363,7 +363,7 @@ break""]");
             Assert.AreEqual(true, parser.Tainted);
         }
 
-        [TestMethod()]
+        [Test()]
         public void Parse__Validity_Fail31()
         {
             JsonParser parser = new JsonParser();
@@ -371,7 +371,7 @@ break""]");
             Assert.AreEqual(true, parser.Tainted);
         }
 
-        [TestMethod()]
+        [Test()]
         public void Parse__Validity_Fail32()
         {
             JsonParser parser = new JsonParser();
@@ -379,7 +379,7 @@ break""]");
             Assert.AreEqual(true, parser.Tainted);
         }
 
-        [TestMethod()]
+        [Test()]
         public void Parse__Validity_Fail33()
         {
             JsonParser parser = new JsonParser();
@@ -387,7 +387,7 @@ break""]");
             Assert.AreEqual(true, parser.Tainted);
         }
 
-        [TestMethod()]
+        [Test()]
         public void Parse__Validity_Pass01()
         {
             JsonParser parser = new JsonParser();
@@ -452,7 +452,7 @@ break""]");
             Assert.AreEqual(false, parser.Tainted);
         }
 
-        [TestMethod()]
+        [Test()]
         public void Parse__Validity_Pass02()
         {
             JsonParser parser = new JsonParser();
@@ -460,7 +460,7 @@ break""]");
             Assert.AreEqual(false, parser.Tainted);
         }
 
-        [TestMethod()]
+        [Test()]
         public void Parse__Validity_Pass03()
         {
             JsonParser parser = new JsonParser();
