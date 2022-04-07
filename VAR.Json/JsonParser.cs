@@ -13,7 +13,7 @@ namespace VAR.Json
         private const int MaxRecursiveCount = 20;
 
         private ParserContext _ctx;
-        private bool _tainted = false;
+        private bool _tainted;
 
         private readonly List<Type> _knownTypes = new List<Type>();
 
@@ -21,38 +21,31 @@ namespace VAR.Json
 
         #region Properties
 
-        public bool Tainted
-        {
-            get { return _tainted; }
-        }
+        public bool Tainted => _tainted;
 
-        public List<Type> KnownTypes
-        {
-            get { return _knownTypes; }
-        }
+        public List<Type> KnownTypes => _knownTypes;
 
         #endregion Properties
 
         #region Private methods
 
-        private static readonly Dictionary<Type, PropertyInfo[]> _dictProperties = new Dictionary<Type, PropertyInfo[]>();
+        private static readonly Dictionary<Type, PropertyInfo[]> _dictProperties =
+            new Dictionary<Type, PropertyInfo[]>();
 
         private PropertyInfo[] Type_GetProperties(Type type)
         {
-            PropertyInfo[] typeProperties = null;
-            if (_dictProperties.ContainsKey(type)) { typeProperties = _dictProperties[type]; }
-            else
+            PropertyInfo[] typeProperties;
+            lock (_dictProperties)
             {
-                lock (_dictProperties)
+                if (_dictProperties.ContainsKey(type)) { typeProperties = _dictProperties[type]; }
+                else
                 {
-                    if (_dictProperties.ContainsKey(type)) { typeProperties = _dictProperties[type]; }
-                    else
-                    {
-                        typeProperties = type.GetProperties(BindingFlags.Public | BindingFlags.OptionalParamBinding | BindingFlags.Instance);
-                        _dictProperties.Add(type, typeProperties);
-                    }
+                    typeProperties = type.GetProperties(BindingFlags.Public | BindingFlags.OptionalParamBinding |
+                                                        BindingFlags.Instance);
+                    _dictProperties.Add(type, typeProperties);
                 }
             }
+
             return typeProperties;
         }
 
@@ -67,7 +60,8 @@ namespace VAR.Json
                     count++;
                 }
             }
-            return ((float)count / (float)typeProperties.Length);
+
+            return count / (float)typeProperties.Length;
         }
 
         private object ConvertToType(Dictionary<string, object> obj, Type type)
@@ -86,9 +80,9 @@ namespace VAR.Json
                     {
                         valueDest = null;
                     }
-                    else if (effectiveType == typeof(Guid) && valueOrig is string)
+                    else if (effectiveType == typeof(Guid) && valueOrig is string valGuid)
                     {
-                        valueDest = new Guid((string)valueOrig);
+                        valueDest = new Guid(valGuid);
                     }
                     else
                     {
@@ -101,9 +95,11 @@ namespace VAR.Json
                             continue;
                         }
                     }
+
                     prop.SetValue(newObj, valueDest, null);
                 }
             }
+
             return newObj;
         }
 
@@ -120,6 +116,7 @@ namespace VAR.Json
                     bestMatchFactor = matchFactor;
                 }
             }
+
             if (bestMatch != null)
             {
                 try
@@ -127,8 +124,12 @@ namespace VAR.Json
                     object newObj = ConvertToType(obj, bestMatch);
                     return newObj;
                 }
-                catch (Exception) { } /* Nom Nom */
+                catch (Exception)
+                {
+                    // ignored
+                }
             }
+
             return obj;
         }
 
@@ -151,6 +152,7 @@ namespace VAR.Json
                     }
                 }
             }
+
             return value;
         }
 
@@ -162,6 +164,7 @@ namespace VAR.Json
             {
                 c = _ctx.Next();
             }
+
             do
             {
                 if (c == '\\')
@@ -208,6 +211,7 @@ namespace VAR.Json
                         // StrictRules: Mark as tainted on unknown escaped character
                         _tainted = true;
                     }
+
                     c = _ctx.Next();
                 }
                 else if (c == '"')
@@ -217,13 +221,14 @@ namespace VAR.Json
                 }
                 else
                 {
-                    // StrictRules: Mark as tainted on ilegal characters
+                    // StrictRules: Mark as tainted on illegal characters
                     if (c == '\t' || c == '\n') { _tainted = true; }
 
                     scratch.Append(c);
                     c = _ctx.Next();
                 }
             } while (!_ctx.AtEnd());
+
             return scratch.ToString();
         }
 
@@ -235,6 +240,7 @@ namespace VAR.Json
             {
                 c = _ctx.Next();
             }
+
             do
             {
                 if (c == '\\')
@@ -281,6 +287,7 @@ namespace VAR.Json
                         // StrictRules: Mark as tainted on unknown escaped character
                         _tainted = true;
                     }
+
                     c = _ctx.Next();
                 }
                 else if (c == '\'')
@@ -290,13 +297,14 @@ namespace VAR.Json
                 }
                 else
                 {
-                    // StrictRules: Mark as tainted on ilegal characters
+                    // StrictRules: Mark as tainted on illegal characters
                     if (c == '\t' || c == '\n') { _tainted = true; }
 
                     scratch.Append(c);
                     c = _ctx.Next();
                 }
             } while (!_ctx.AtEnd());
+
             return scratch.ToString();
         }
 
@@ -307,16 +315,19 @@ namespace VAR.Json
             {
                 return ParseQuotedString();
             }
+
             if (c == '\'')
             {
                 _tainted = true;
                 return ParseSingleQuotedString();
             }
+
             if (mustBeQuoted) { _tainted = true; }
+
             StringBuilder scratch = new StringBuilder();
 
             while (!_ctx.AtEnd()
-                    && (char.IsLetter(c) || char.IsDigit(c) || c == '_'))
+                   && (char.IsLetter(c) || char.IsDigit(c) || c == '_'))
             {
                 scratch.Append(c);
                 c = _ctx.Next();
@@ -332,8 +343,7 @@ namespace VAR.Json
             bool isExp = false;
             int numberLenght = 0;
             int expLenght = 0;
-            char c;
-            c = _ctx.SkipWhite();
+            char c = _ctx.SkipWhite();
 
             // Sign
             if (c == '-')
@@ -394,6 +404,7 @@ namespace VAR.Json
                     scratch.Append(c);
                     c = _ctx.Next();
                 }
+
                 while (char.IsDigit(c))
                 {
                     scratch.Append(c);
@@ -443,6 +454,7 @@ namespace VAR.Json
             {
                 _ctx.Next();
             }
+
             bool? expectValue = null;
             do
             {
@@ -451,6 +463,7 @@ namespace VAR.Json
                 {
                     // StrictRules: Mark as tainted when unexpected end of array
                     if (expectValue == true) { _tainted = true; }
+
                     correct = true;
                     _ctx.Next();
                     break;
@@ -467,6 +480,7 @@ namespace VAR.Json
                 {
                     // StrictRules: Mark as tainted when unexpected value on array
                     if (expectValue == false) { _tainted = true; }
+
                     object value = ParseValue(recursiveCount + 1);
                     array.Add(value);
                     expectValue = false;
@@ -475,6 +489,7 @@ namespace VAR.Json
                     {
                         Type valueType = value?.GetType();
                         if (valueType == null) { hasNulls = true; }
+
                         if (arrayContentType == null || arrayContentType == valueType)
                         {
                             arrayContentType = valueType;
@@ -486,21 +501,24 @@ namespace VAR.Json
                     }
                 }
             } while (!_ctx.AtEnd());
+
             if (correct == false)
             {
                 _tainted = true;
             }
+
             object result = array;
             bool isNullableType = arrayContentType?.IsClass == true;
-            if (hasSameType && arrayContentType != null && (isNullableType == true || (isNullableType == false && hasNulls == false)))
+            if (hasSameType && arrayContentType != null && (isNullableType || (hasNulls == false)))
             {
                 var enumerableType = typeof(System.Linq.Enumerable);
-                var castMethod = enumerableType.GetMethod("Cast").MakeGenericMethod(arrayContentType);
-                var toListMethod = enumerableType.GetMethod("ToList").MakeGenericMethod(arrayContentType);
+                var castMethod = enumerableType.GetMethod("Cast")?.MakeGenericMethod(arrayContentType);
+                var toListMethod = enumerableType.GetMethod("ToList")?.MakeGenericMethod(arrayContentType);
                 IEnumerable<object> itemsToCast = array;
-                var castedItems = castMethod.Invoke(null, new[] { itemsToCast });
-                result = toListMethod.Invoke(null, new[] { castedItems });
+                var castedItems = castMethod?.Invoke(null, new object[] { itemsToCast });
+                result = toListMethod?.Invoke(null, new[] { castedItems });
             }
+
             return result;
         }
 
@@ -516,8 +534,8 @@ namespace VAR.Json
             {
                 _ctx.Next();
             }
+
             string attributeName = null;
-            object attributeValue;
             bool? expectedKey = null;
             bool? expectedValue = null;
             do
@@ -528,7 +546,7 @@ namespace VAR.Json
                     _ctx.Next();
                     if (expectedValue == true)
                     {
-                        attributeValue = ParseValue(recursiveCount + 1);
+                        object attributeValue = ParseValue(recursiveCount + 1);
                         obj.Add(attributeName, attributeValue);
                         expectedKey = null;
                         expectedValue = false;
@@ -548,6 +566,7 @@ namespace VAR.Json
                     {
                         _tainted = true;
                     }
+
                     correct = true;
                     _ctx.Next();
                     break;
@@ -569,15 +588,17 @@ namespace VAR.Json
                     }
                 }
             } while (!_ctx.AtEnd());
+
             if (correct == false)
             {
                 _tainted = true;
             }
+
             object result = TryConvertToTypes(obj);
             return result;
         }
 
-        private object ParseValue(int recusiveCount = 1)
+        private object ParseValue(int recursiveCount = 1)
         {
             char c = _ctx.SkipWhite();
             object token;
@@ -594,11 +615,11 @@ namespace VAR.Json
                     break;
 
                 case '{':
-                    token = ParseObject(recusiveCount);
+                    token = ParseObject(recursiveCount);
                     break;
 
                 case '[':
-                    token = ParseArray(recusiveCount);
+                    token = ParseArray(recursiveCount);
                     break;
 
                 default:
@@ -609,15 +630,15 @@ namespace VAR.Json
                     else
                     {
                         string aux = ParseString();
-                        if (aux.CompareTo("true") == 0)
+                        if (aux.Equals("true"))
                         {
                             token = true;
                         }
-                        else if (aux.CompareTo("false") == 0)
+                        else if (aux.Equals("false"))
                         {
                             token = false;
                         }
-                        else if (aux.CompareTo("null") == 0)
+                        else if (aux.Equals("null"))
                         {
                             token = null;
                         }
@@ -628,12 +649,15 @@ namespace VAR.Json
                             {
                                 _ctx.Next();
                             }
+
                             _tainted = true;
                             token = null;
                         }
                     }
+
                     break;
             }
+
             return token;
         }
 
@@ -666,7 +690,7 @@ namespace VAR.Json
             return obj;
         }
 
-        private static JsonParser _currentInstance = null;
+        private static JsonParser _currentInstance;
 
         public static object ParseText(string text, params Type[] knownTypes)
         {
@@ -674,6 +698,7 @@ namespace VAR.Json
             {
                 _currentInstance = new JsonParser();
             }
+
             _currentInstance.KnownTypes.Clear();
             _currentInstance.KnownTypes.AddRange(knownTypes);
             return _currentInstance.Parse(text);

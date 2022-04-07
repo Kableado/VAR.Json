@@ -2,34 +2,39 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 
 namespace VAR.Json
 {
     public class JsonWriterConfiguration
     {
-        private bool _indent;
-        public bool Indent { get { return _indent; } }
+        private readonly bool _indent;
 
-        private bool _useTabForIndent;
-        public bool UseTabForIndent { get { return _useTabForIndent; } }
+        public bool Indent => _indent;
 
-        private int _indentChars;
-        public int IndentChars { get { return _indentChars; } }
+        private readonly bool _useTabForIndent;
 
-        private int _indentThresold;
-        public int IndentThresold { get { return _indentThresold; } }
+        public bool UseTabForIndent => _useTabForIndent;
+
+        private readonly int _indentChars;
+
+        public int IndentChars => _indentChars;
+
+        private readonly int _indentThreshold;
+
+        public int IndentThreshold => _indentThreshold;
 
         public JsonWriterConfiguration(
             bool indent = false,
             bool useTabForIndent = false,
             int indentChars = 4,
-            int indentThresold = 3)
+            int indentThreshold = 3)
         {
             _indent = indent;
             _useTabForIndent = useTabForIndent;
             _indentChars = indentChars;
-            _indentThresold = indentThresold;
+            _indentThreshold = indentThreshold;
         }
 
         public bool Equals(JsonWriterConfiguration other)
@@ -38,22 +43,24 @@ namespace VAR.Json
                 other.Indent == Indent &&
                 other.UseTabForIndent == UseTabForIndent &&
                 other.IndentChars == IndentChars &&
-                other.IndentThresold == IndentThresold &&
+                other.IndentThreshold == IndentThreshold &&
                 true;
         }
 
         public override bool Equals(object other)
         {
-            if (other is JsonWriterConfiguration)
+            if (other is JsonWriterConfiguration configuration)
             {
-                return Equals(other as JsonWriterConfiguration);
+                return Equals(configuration);
             }
+
             return false;
         }
 
         public override int GetHashCode()
         {
-            return _indent.GetHashCode() ^ _useTabForIndent.GetHashCode() ^ _indentChars.GetHashCode() ^ _indentThresold.GetHashCode();
+            return _indent.GetHashCode() ^ _useTabForIndent.GetHashCode() ^ _indentChars.GetHashCode() ^
+                   _indentThreshold.GetHashCode();
         }
     }
 
@@ -61,7 +68,7 @@ namespace VAR.Json
     {
         #region Declarations
 
-        private JsonWriterConfiguration _config = null;
+        private readonly JsonWriterConfiguration _config;
 
         #endregion Declarations
 
@@ -69,11 +76,7 @@ namespace VAR.Json
 
         public JsonWriter(JsonWriterConfiguration config = null)
         {
-            _config = config;
-            if (_config == null)
-            {
-                _config = new JsonWriterConfiguration();
-            }
+            _config = config ?? new JsonWriterConfiguration();
         }
 
         #endregion Creator
@@ -86,6 +89,7 @@ namespace VAR.Json
             {
                 return true;
             }
+
             if (
                 (obj is float) ||
                 (obj is double) ||
@@ -98,6 +102,7 @@ namespace VAR.Json
             {
                 return true;
             }
+
             return false;
         }
 
@@ -107,6 +112,7 @@ namespace VAR.Json
             {
                 return;
             }
+
             textWriter.Write('\n');
             if (_config.UseTabForIndent)
             {
@@ -122,11 +128,10 @@ namespace VAR.Json
         private void WriteString(TextWriter textWriter, string str)
         {
             textWriter.Write('"');
-            char c;
             int n = str.Length;
             for (int i = 0; i < n; i++)
             {
-                c = str[i];
+                char c = str[i];
                 if (c == '"') { textWriter.Write("\\\""); }
                 else if (c == '\\') { textWriter.Write("\\\\"); }
                 else if (c == '/') { textWriter.Write("\\/"); }
@@ -138,6 +143,7 @@ namespace VAR.Json
                 else if (c < 32 || c >= 127) { textWriter.Write("\\u{0:X04}", (int)c); }
                 else { textWriter.Write(c); }
             }
+
             textWriter.Write('"');
         }
 
@@ -159,43 +165,41 @@ namespace VAR.Json
                 // Numbers
                 textWriter.Write(obj.ToString());
             }
-            else if (obj is string)
-            {
-                // Strings
-                WriteString(textWriter, (string)obj);
-            }
-            else if (obj is bool)
-            {
-                // Booleans
-                textWriter.Write(((bool)obj) ? "true" : "false");
-            }
-            else if (obj is DateTime)
-            {
-                // DateTime
-                textWriter.Write('"');
-                textWriter.Write(((DateTime)obj).ToString("yyyy-MM-ddTHH:mm:ss"));
-                textWriter.Write('"');
-            }
-            else if (obj is IDictionary)
-            {
-                // Objects
-                WriteObject(textWriter, obj, parentLevels);
-            }
-            else if (obj is IEnumerable)
-            {
-                // Array/List
-                WriteList(textWriter, obj, parentLevels);
-            }
             else
-            {
-                // Reflected object
-                WriteReflectedObject(textWriter, obj, parentLevels);
-            }
+                switch (obj)
+                {
+                    case string valString:
+                        // Strings
+                        WriteString(textWriter, valString);
+                        break;
+                    case bool valBool:
+                        // Booleans
+                        textWriter.Write(valBool ? "true" : "false");
+                        break;
+                    case DateTime valDateTime:
+                        // DateTime
+                        textWriter.Write('"');
+                        textWriter.Write(valDateTime.ToString("yyyy-MM-ddTHH:mm:ss"));
+                        textWriter.Write('"');
+                        break;
+                    case IDictionary _:
+                        // Objects
+                        WriteObject(textWriter, obj, parentLevels);
+                        break;
+                    case IEnumerable _:
+                        // Array/List
+                        WriteList(textWriter, obj, parentLevels);
+                        break;
+                    default:
+                        // Reflected object
+                        WriteReflectedObject(textWriter, obj, parentLevels);
+                        break;
+                }
         }
 
         private void WriteList(TextWriter textWriter, object obj, List<object> parentLevels)
         {
-            IEnumerable list = (IEnumerable)obj;
+            IEnumerable list = ((IEnumerable)obj).Cast<object>().ToList();
             int n = 0;
 
             // Check if it is a leaf object
@@ -206,6 +210,7 @@ namespace VAR.Json
                 {
                     isLeaf = false;
                 }
+
                 n++;
             }
 
@@ -219,29 +224,33 @@ namespace VAR.Json
             // Write array
             bool first = true;
             textWriter.Write("[ ");
-            if (!isLeaf || n > _config.IndentThresold)
+            if (!isLeaf || n > _config.IndentThreshold)
             {
                 WriteIndent(textWriter, parentLevels.Count + 1);
             }
+
             foreach (object childObj in list)
             {
                 if (!first)
                 {
                     textWriter.Write(", ");
-                    if (!isLeaf || n > _config.IndentThresold)
+                    if (!isLeaf || n > _config.IndentThreshold)
                     {
                         WriteIndent(textWriter, parentLevels.Count + 1);
                     }
                 }
+
                 first = false;
                 parentLevels.Add(obj);
                 WriteValue(textWriter, childObj, parentLevels);
                 parentLevels.Remove(obj);
             }
-            if (!isLeaf || n > _config.IndentThresold)
+
+            if (!isLeaf || n > _config.IndentThreshold)
             {
                 WriteIndent(textWriter, parentLevels.Count);
             }
+
             textWriter.Write(" ]");
         }
 
@@ -271,21 +280,23 @@ namespace VAR.Json
             // Write object
             bool first = true;
             textWriter.Write("{ ");
-            if (!isLeaf || n > _config.IndentThresold)
+            if (!isLeaf || n > _config.IndentThreshold)
             {
                 WriteIndent(textWriter, parentLevels.Count + 1);
             }
+
             foreach (object key in map.Keys)
             {
                 object value = map[key];
                 if (!first)
                 {
                     textWriter.Write(", ");
-                    if (!isLeaf || n > _config.IndentThresold)
+                    if (!isLeaf || n > _config.IndentThreshold)
                     {
                         WriteIndent(textWriter, parentLevels.Count + 1);
                     }
                 }
+
                 first = false;
                 WriteString(textWriter, Convert.ToString(key));
                 textWriter.Write(": ");
@@ -293,10 +304,12 @@ namespace VAR.Json
                 WriteValue(textWriter, value, parentLevels);
                 parentLevels.Remove(obj);
             }
-            if (!isLeaf || n > _config.IndentThresold)
+
+            if (!isLeaf || n > _config.IndentThreshold)
             {
                 WriteIndent(textWriter, parentLevels.Count);
             }
+
             textWriter.Write(" }");
         }
 
@@ -311,6 +324,7 @@ namespace VAR.Json
 
                 properties.Add(property);
             }
+
             int n = properties.Count;
 
             // Empty
@@ -335,10 +349,11 @@ namespace VAR.Json
             // Write object
             bool first = true;
             textWriter.Write("{ ");
-            if (!isLeaf || n > _config.IndentThresold)
+            if (!isLeaf || n > _config.IndentThreshold)
             {
                 WriteIndent(textWriter, parentLevels.Count + 1);
             }
+
             foreach (PropertyInfo property in properties)
             {
                 object value = null;
@@ -348,14 +363,16 @@ namespace VAR.Json
                 {
                     value = property.GetValue(obj, null);
                 }
+
                 if (!first)
                 {
                     textWriter.Write(", ");
-                    if (!isLeaf || n > _config.IndentThresold)
+                    if (!isLeaf || n > _config.IndentThreshold)
                     {
                         WriteIndent(textWriter, parentLevels.Count + 1);
                     }
                 }
+
                 first = false;
                 WriteString(textWriter, property.Name);
                 textWriter.Write(": ");
@@ -368,12 +385,15 @@ namespace VAR.Json
                 {
                     WriteValue(textWriter, null, parentLevels);
                 }
+
                 parentLevels.Remove(obj);
             }
-            if (!isLeaf || n > _config.IndentThresold)
+
+            if (!isLeaf || n > _config.IndentThreshold)
             {
                 WriteIndent(textWriter, parentLevels.Count);
             }
+
             textWriter.Write(" }");
         }
 
@@ -387,6 +407,7 @@ namespace VAR.Json
             {
                 textWriter = new StringWriter();
             }
+
             WriteValue(textWriter, obj, new List<object>());
             return textWriter;
         }
@@ -398,14 +419,15 @@ namespace VAR.Json
             return textWriter.ToString();
         }
 
-        private static Dictionary<JsonWriterConfiguration, JsonWriter> _dictInstances = new Dictionary<JsonWriterConfiguration, JsonWriter>();
+        private static readonly Dictionary<JsonWriterConfiguration, JsonWriter> _dictInstances =
+            new Dictionary<JsonWriterConfiguration, JsonWriter>();
 
         public static string WriteObject(object obj,
             JsonWriterConfiguration config = null,
             bool indent = false,
             bool useTabForIndent = false,
             int indentChars = 4,
-            int indentThresold = 3)
+            int indentThreshold = 3)
         {
             JsonWriter jsonWriter = null;
 
@@ -420,6 +442,7 @@ namespace VAR.Json
                 {
                     jsonWriter = _dictInstances[config];
                 }
+
                 return jsonWriter.Write(obj);
             }
 
@@ -429,13 +452,14 @@ namespace VAR.Json
                     pair.Key.Indent == indent &&
                     pair.Key.UseTabForIndent == useTabForIndent &&
                     pair.Key.IndentChars == indentChars &&
-                    pair.Key.IndentThresold == indentThresold &&
+                    pair.Key.IndentThreshold == indentThreshold &&
                     true)
                 {
                     jsonWriter = pair.Value;
                     break;
                 }
             }
+
             if (jsonWriter != null)
             {
                 return jsonWriter.Write(obj);
@@ -445,7 +469,7 @@ namespace VAR.Json
                 indent: indent,
                 useTabForIndent: useTabForIndent,
                 indentChars: indentChars,
-                indentThresold: indentThresold);
+                indentThreshold: indentThreshold);
             jsonWriter = new JsonWriter(jsonWriterConfiguration);
             _dictInstances.Add(jsonWriterConfiguration, jsonWriter);
 

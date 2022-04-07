@@ -1,13 +1,11 @@
-﻿using System;
-
-namespace VAR.Json
+﻿namespace VAR.Json
 {
     public class ParserContext
     {
         #region Declarations
 
-        private string _text;
-        private int _length;
+        private readonly string _text;
+        private readonly int _length;
         private int _i;
         private int _markStart;
 
@@ -33,10 +31,12 @@ namespace VAR.Json
             {
                 _i++;
             }
+
             if (AtEnd())
             {
                 return (char)0;
             }
+
             return _text[_i];
         }
 
@@ -47,6 +47,7 @@ namespace VAR.Json
             {
                 return (char)0;
             }
+
             return _text[_i];
         }
 

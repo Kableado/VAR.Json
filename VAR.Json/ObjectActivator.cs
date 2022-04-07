@@ -4,17 +4,12 @@ using System.Linq.Expressions;
 
 namespace VAR.Json
 {
-    public class ObjectActivator
+    public static class ObjectActivator
     {
         private static readonly Dictionary<Type, Func<object>> _creators = new Dictionary<Type, Func<object>>();
 
-        public static Func<object> GetLambdaNew(Type type)
+        private static Func<object> GetLambdaNew(Type type)
         {
-            if (_creators.ContainsKey(type))
-            {
-                return _creators[type];
-            }
-
             lock (_creators)
             {
                 if (_creators.ContainsKey(type))
