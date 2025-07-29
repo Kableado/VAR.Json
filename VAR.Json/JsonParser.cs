@@ -511,11 +511,11 @@ namespace VAR.Json
             bool isNullableType = arrayContentType?.IsClass == true;
             if (hasSameType && arrayContentType != null && (isNullableType || (hasNulls == false)))
             {
-                var enumerableType = typeof(System.Linq.Enumerable);
-                var castMethod = enumerableType.GetMethod("Cast")?.MakeGenericMethod(arrayContentType);
-                var toListMethod = enumerableType.GetMethod("ToList")?.MakeGenericMethod(arrayContentType);
+                Type enumerableType = typeof(System.Linq.Enumerable);
+                MethodInfo castMethod = enumerableType.GetMethod("Cast")?.MakeGenericMethod(arrayContentType);
+                MethodInfo toListMethod = enumerableType.GetMethod("ToList")?.MakeGenericMethod(arrayContentType);
                 IEnumerable<object> itemsToCast = array;
-                var castedItems = castMethod?.Invoke(null, new object[] { itemsToCast });
+                object castedItems = castMethod?.Invoke(null, new object[] { itemsToCast });
                 result = toListMethod?.Invoke(null, new[] { castedItems });
             }
 
