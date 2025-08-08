@@ -2,34 +2,31 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 
-namespace VAR.Json
+namespace VAR.Json;
+
+public static class ObjectActivator
 {
-    public static class ObjectActivator
+    private static readonly Dictionary<Type, Func<object>> _creators = new();
+
+    private static Func<object> GetLambdaNew(Type type)
     {
-        private static readonly Dictionary<Type, Func<object>> _creators = new Dictionary<Type, Func<object>>();
-
-        private static Func<object> GetLambdaNew(Type type)
+        lock (_creators)
         {
-            lock (_creators)
-            {
-                if (_creators.ContainsKey(type))
-                {
-                    return _creators[type];
-                }
+            if (_creators.TryGetValue(type, out Func<object>? creator)) { return creator; }
 
-                NewExpression newExp = Expression.New(type);
-                LambdaExpression lambda = Expression.Lambda(typeof(Func<object>), newExp);
-                Func<object> compiledLambdaNew = (Func<object>)lambda.Compile();
+            NewExpression newExp = Expression.New(type);
+            LambdaExpression lambda = Expression.Lambda(typeof(Func<object>), newExp);
+            Func<object> compiledLambdaNew = (Func<object>)lambda.Compile();
 
-                _creators.Add(type, compiledLambdaNew);
-                return _creators[type];
-            }
+            _creators.Add(type, compiledLambdaNew);
+
+            return _creators[type];
         }
+    }
 
-        public static object CreateInstance(Type type)
-        {
-            Func<object> creator = GetLambdaNew(type);
-            return creator();
-        }
+    public static object CreateInstance(Type type)
+    {
+        Func<object> creator = GetLambdaNew(type);
+        return creator();
     }
 }
