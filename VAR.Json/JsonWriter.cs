@@ -37,12 +37,14 @@ public class JsonWriterConfiguration
         _indentThreshold = indentThreshold;
     }
 
-    public bool Equals(JsonWriterConfiguration other) =>
-        other.Indent == Indent &&
-        other.UseTabForIndent == UseTabForIndent &&
-        other.IndentChars == IndentChars &&
-        other.IndentThreshold == IndentThreshold &&
-        true;
+    public bool Equals(JsonWriterConfiguration other)
+    {
+        return other.Indent == Indent &&
+               other.UseTabForIndent == UseTabForIndent &&
+               other.IndentChars == IndentChars &&
+               other.IndentThreshold == IndentThreshold &&
+               true;
+    }
 
     public override bool Equals(object? other)
     {
@@ -425,14 +427,14 @@ public class JsonWriter
 
         if (config != null)
         {
-            if (_dictInstances.ContainsKey(config) == false)
+            if (_dictInstances.TryGetValue(config, out JsonWriter? instance) == false)
             {
                 jsonWriter = new JsonWriter(config);
                 _dictInstances.Add(config, jsonWriter);
             }
             else
             {
-                jsonWriter = _dictInstances[config];
+                jsonWriter = instance;
             }
 
             return jsonWriter.Write(obj);

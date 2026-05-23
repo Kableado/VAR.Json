@@ -36,7 +36,7 @@ public class JsonParser
         PropertyInfo[] typeProperties;
         lock (_dictProperties)
         {
-            if (_dictProperties.ContainsKey(type)) { typeProperties = _dictProperties[type]; }
+            if (_dictProperties.TryGetValue(type, out PropertyInfo[]? property)) { typeProperties = property; }
             else
             {
                 typeProperties = type.GetProperties(BindingFlags.Public | BindingFlags.OptionalParamBinding |
@@ -145,7 +145,7 @@ public class JsonParser
             else
             {
                 c = char.ToLower(c);
-                if (c >= 'a' && c <= 'f')
+                if (c is >= 'a' and <= 'f')
                 {
                     value = (value << 4) | ((c - 'a') + 10);
                 }
@@ -340,8 +340,8 @@ public class JsonParser
         StringBuilder scratch = new();
         bool isFloat = false;
         bool isExp = false;
-        int numberLenght = 0;
-        int expLenght = 0;
+        int numberLength = 0;
+        int expLength = 0;
         char c = _ctx.SkipWhite();
 
         // Sign
@@ -353,20 +353,20 @@ public class JsonParser
 
         // Integer part
         bool leadingZeroes = true;
-        int leadingZeroesLenght = 0;
+        int leadingZeroesLength = 0;
         while (char.IsDigit(c))
         {
             // Count leading zeroes
-            if (leadingZeroes && c == '0') { leadingZeroesLenght++; }
+            if (leadingZeroes && c == '0') { leadingZeroesLength++; }
             else { leadingZeroes = false; }
 
             scratch.Append(c);
             c = _ctx.Next();
-            numberLenght++;
+            numberLength++;
         }
 
         // StrictRules: Mark as tainted with leading zeroes
-        if ((leadingZeroesLenght > 0 && leadingZeroesLenght != numberLenght) || leadingZeroesLenght > 1)
+        if ((leadingZeroesLength > 0 && leadingZeroesLength != numberLength) || leadingZeroesLength > 1)
         {
             _tainted = true;
         }
@@ -381,11 +381,11 @@ public class JsonParser
             {
                 scratch.Append(c);
                 c = _ctx.Next();
-                numberLenght++;
+                numberLength++;
             }
         }
 
-        if (numberLenght == 0)
+        if (numberLength == 0)
         {
             _tainted = true;
             return null;
@@ -408,12 +408,12 @@ public class JsonParser
             {
                 scratch.Append(c);
                 c = _ctx.Next();
-                numberLenght++;
-                expLenght++;
+                numberLength++;
+                expLength++;
             }
         }
 
-        if (isExp && expLenght == 0)
+        if (isExp && expLength == 0)
         {
             _tainted = true;
             return null;
@@ -423,7 +423,7 @@ public class JsonParser
         string s = scratch.ToString();
         if (!isFloat) { return Convert.ToInt32(s); }
         
-        if (numberLenght < 17)
+        if (numberLength < 17)
         {
             return Convert.ToDouble(s, CultureInfo.InvariantCulture);
         }
@@ -521,7 +521,7 @@ public class JsonParser
 
         bool correct = false;
         char c = _ctx.SkipWhite();
-        Dictionary<string, object?> obj = new Dictionary<string, object?>();
+        Dictionary<string, object?> obj = new();
         if (c == '{')
         {
             _ctx.Next();
@@ -668,7 +668,7 @@ public class JsonParser
         if (_ctx.AtEnd())
         {
             // StrictRules: Mark as tainted when top level is not object or array
-            if (obj is string || obj is decimal || obj is int || obj is double || obj is float)
+            if (obj is string or decimal or int or double or float)
             {
                 _tainted = true;
             }
@@ -686,10 +686,7 @@ public class JsonParser
 
     public static object? ParseText(string text, params Type[] knownTypes)
     {
-        if (_currentInstance == null)
-        {
-            _currentInstance = new JsonParser();
-        }
+        _currentInstance ??= new JsonParser();
 
         _currentInstance.KnownTypes.Clear();
         _currentInstance.KnownTypes.AddRange(knownTypes);

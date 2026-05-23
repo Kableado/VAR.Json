@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/Misc/">
+    <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+    <File Path="LICENSE.txt" />
+    <File Path="README.md" />
+  </Folder>
+  <Project Path="VAR.Json.Tests/VAR.Json.Tests.csproj" />
+  <Project Path="VAR.Json/VAR.Json.csproj" />
+</Solution>

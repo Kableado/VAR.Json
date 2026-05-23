@@ -18,7 +18,7 @@ public class JsonParser_Tests
     {
         JsonParser parser = new();
         parser.KnownTypes.Add(typeof(SwallowObject));
-        SwallowObject? result = parser.Parse(@"{""Text"": ""AAAA"", ""Number"": 42}") as SwallowObject;
+        SwallowObject? result = parser.Parse("""{"Text": "AAAA", "Number": 42}""") as SwallowObject;
         Assert.False(parser.Tainted);
         Assert.Equal("AAAA", result?.Text);
         Assert.Equal(42, result?.Number);
@@ -37,7 +37,7 @@ public class JsonParser_Tests
         parser.KnownTypes.Add(typeof(SwallowObject));
         parser.KnownTypes.Add(typeof(DeeperObject_L1));
         DeeperObject_L1? result =
-            parser.Parse(@"{""Name"": ""Thing"", ""Object"": {""Text"": ""AAAA"", ""Number"": 42}}") as
+            parser.Parse("""{"Name": "Thing", "Object": {"Text": "AAAA", "Number": 42}}""") as
                 DeeperObject_L1;
         Assert.False(parser.Tainted);
         Assert.Equal("Thing", result?.Name);
@@ -60,7 +60,7 @@ public class JsonParser_Tests
         parser.KnownTypes.Add(typeof(DeeperObject_L2));
         DeeperObject_L2? result =
             parser.Parse(
-                    @"{""Count"": 1, ""Object"": {""Name"": ""Thing"", ""Object"": {""Text"": ""AAAA"", ""Number"": 42}}}")
+                    """{"Count": 1, "Object": {"Name": "Thing", "Object": {"Text": "AAAA", "Number": 42}}}""")
                 as DeeperObject_L2;
         Assert.False(parser.Tainted);
         Assert.NotNull(result);
@@ -75,7 +75,7 @@ public class JsonParser_Tests
     {
         JsonParser parser = new();
         parser.KnownTypes.Add(typeof(SwallowObject));
-        List<SwallowObject>? result = parser.Parse(@"[{""Text"": ""AAAA"", ""Number"": 42}]") as List<SwallowObject>;
+        List<SwallowObject>? result = parser.Parse("""[{"Text": "AAAA", "Number": 42}]""") as List<SwallowObject>;
         Assert.False(parser.Tainted);
         Assert.NotNull(result);
         Assert.Single(result);
@@ -96,11 +96,11 @@ public class JsonParser_Tests
         parser.KnownTypes.Add(typeof(SwallowObject));
         parser.KnownTypes.Add(typeof(DeeperObjectArray_L1));
         DeeperObjectArray_L1? result =
-            parser.Parse(@"{""Count"": 1, ""Array"": [{""Text"": ""AAAA"", ""Number"": 42}]}") as
+            parser.Parse("""{"Count": 1, "Array": [{"Text": "AAAA", "Number": 42}]}""") as
                 DeeperObjectArray_L1;
         Assert.False(parser.Tainted);
         Assert.NotNull(result);
-        Assert.Equal(1, result?.Count);
+        Assert.Equal(1, result.Count);
         Assert.Equal("AAAA", result?.Array?[0].Text);
         Assert.Equal(42, result?.Array?[0].Number);
     }
@@ -120,7 +120,7 @@ public class JsonParser_Tests
         parser.KnownTypes.Add(typeof(DeeperObjectArray_L2));
         DeeperObjectArray_L2? result =
             parser.Parse(
-                    @"{""Name"": ""Thing"", ""Objects"": [{""Count"": 1, ""Array"": [{""Text"": ""AAAA"", ""Number"": 42}]}]}")
+                    """{"Name": "Thing", "Objects": [{"Count": 1, "Array": [{"Text": "AAAA", "Number": 42}]}]}""")
                 as DeeperObjectArray_L2;
         Assert.False(parser.Tainted);
         Assert.Equal("Thing", result?.Name);
@@ -137,7 +137,9 @@ public class JsonParser_Tests
     public void Parse__Validity_Fail01()
     {
         JsonParser parser = new();
-        parser.Parse(@"""A JSON payload should be an object or array, not a string.""");
+        parser.Parse("""
+                     "A JSON payload should be an object or array, not a string."
+                     """);
         Assert.True(parser.Tainted);
     }
 
@@ -145,7 +147,9 @@ public class JsonParser_Tests
     public void Parse__Validity_Fail02()
     {
         JsonParser parser = new();
-        parser.Parse(@"[""Unclosed array""");
+        parser.Parse("""
+                     ["Unclosed array"
+                     """);
         Assert.True(parser.Tainted);
     }
 
@@ -153,7 +157,7 @@ public class JsonParser_Tests
     public void Parse__Validity_Fail03()
     {
         JsonParser parser = new();
-        parser.Parse(@"{unquoted_key: ""keys must be quoted""}");
+        parser.Parse("""{unquoted_key: "keys must be quoted"}""");
         Assert.True(parser.Tainted);
     }
 
@@ -161,7 +165,7 @@ public class JsonParser_Tests
     public void Parse__Validity_Fail04()
     {
         JsonParser parser = new();
-        parser.Parse(@"[""extra comma"",]");
+        parser.Parse("""["extra comma",]""");
         Assert.True(parser.Tainted);
     }
 
@@ -169,7 +173,7 @@ public class JsonParser_Tests
     public void Parse__Validity_Fail05()
     {
         JsonParser parser = new();
-        parser.Parse(@"[""double extra comma"",,]");
+        parser.Parse("""["double extra comma",,]""");
         Assert.True(parser.Tainted);
     }
 
@@ -177,7 +181,7 @@ public class JsonParser_Tests
     public void Parse__Validity_Fail06()
     {
         JsonParser parser = new();
-        parser.Parse(@"[   , ""<-- missing value""]");
+        parser.Parse("""[   , "<-- missing value"]""");
         Assert.True(parser.Tainted);
     }
 
@@ -185,7 +189,7 @@ public class JsonParser_Tests
     public void Parse__Validity_Fail07()
     {
         JsonParser parser = new();
-        parser.Parse(@"[""Comma after the close""],");
+        parser.Parse("""["Comma after the close"],""");
         Assert.True(parser.Tainted);
     }
 
@@ -193,7 +197,7 @@ public class JsonParser_Tests
     public void Parse__Validity_Fail08()
     {
         JsonParser parser = new();
-        parser.Parse(@"[""Extra close""]]");
+        parser.Parse("""["Extra close"]]""");
         Assert.True(parser.Tainted);
     }
 
@@ -201,7 +205,7 @@ public class JsonParser_Tests
     public void Parse__Validity_Fail09()
     {
         JsonParser parser = new();
-        parser.Parse(@"{""Extra comma"": true,}");
+        parser.Parse("""{"Extra comma": true,}""");
         Assert.True(parser.Tainted);
     }
 
@@ -209,7 +213,9 @@ public class JsonParser_Tests
     public void Parse__Validity_Fail10()
     {
         JsonParser parser = new();
-        parser.Parse(@"{""Extra value after close"": true} ""misplaced quoted value""");
+        parser.Parse("""
+                     {"Extra value after close": true} "misplaced quoted value"
+                     """);
         Assert.True(parser.Tainted);
     }
 
@@ -217,7 +223,7 @@ public class JsonParser_Tests
     public void Parse__Validity_Fail11()
     {
         JsonParser parser = new();
-        parser.Parse(@"{""Illegal expression"": 1 + 2}");
+        parser.Parse("""{"Illegal expression": 1 + 2}""");
         Assert.True(parser.Tainted);
     }
 
@@ -225,7 +231,7 @@ public class JsonParser_Tests
     public void Parse__Validity_Fail12()
     {
         JsonParser parser = new();
-        parser.Parse(@"{""Illegal invocation"": alert()}");
+        parser.Parse("""{"Illegal invocation": alert()}""");
         Assert.True(parser.Tainted);
     }
 
@@ -233,7 +239,7 @@ public class JsonParser_Tests
     public void Parse__Validity_Fail13()
     {
         JsonParser parser = new();
-        parser.Parse(@"{""Numbers cannot have leading zeroes"": 013}");
+        parser.Parse("""{"Numbers cannot have leading zeroes": 013}""");
         Assert.True(parser.Tainted);
     }
 
@@ -241,7 +247,7 @@ public class JsonParser_Tests
     public void Parse__Validity_Fail14()
     {
         JsonParser parser = new();
-        parser.Parse(@"{""Numbers cannot be hex"": 0x14}");
+        parser.Parse("""{"Numbers cannot be hex": 0x14}""");
         Assert.True(parser.Tainted);
     }
 
@@ -249,7 +255,7 @@ public class JsonParser_Tests
     public void Parse__Validity_Fail15()
     {
         JsonParser parser = new();
-        parser.Parse(@"[""Illegal backslash escape: \x15""]");
+        parser.Parse("""["Illegal backslash escape: \x15"]""");
         Assert.True(parser.Tainted);
     }
 
@@ -265,7 +271,7 @@ public class JsonParser_Tests
     public void Parse__Validity_Fail17()
     {
         JsonParser parser = new();
-        parser.Parse(@"[""Illegal backslash escape: \017""]");
+        parser.Parse("""["Illegal backslash escape: \017"]""");
         Assert.True(parser.Tainted);
     }
 
@@ -273,7 +279,7 @@ public class JsonParser_Tests
     public void Parse__Validity_Fail18()
     {
         JsonParser parser = new();
-        parser.Parse(@"[[[[[[[[[[[[[[[[[[[[""Too deep""]]]]]]]]]]]]]]]]]]]]");
+        parser.Parse("""[[[[[[[[[[[[[[[[[[[["Too deep"]]]]]]]]]]]]]]]]]]]]""");
         Assert.True(parser.Tainted);
     }
 
@@ -281,7 +287,7 @@ public class JsonParser_Tests
     public void Parse__Validity_Fail19()
     {
         JsonParser parser = new();
-        parser.Parse(@"{""Missing colon"" null}");
+        parser.Parse("""{"Missing colon" null}""");
         Assert.True(parser.Tainted);
     }
 
@@ -289,7 +295,7 @@ public class JsonParser_Tests
     public void Parse__Validity_Fail20()
     {
         JsonParser parser = new();
-        parser.Parse(@"{""Double colon"":: null}");
+        parser.Parse("""{"Double colon":: null}""");
         Assert.True(parser.Tainted);
     }
 
@@ -297,7 +303,7 @@ public class JsonParser_Tests
     public void Parse__Validity_Fail21()
     {
         JsonParser parser = new();
-        parser.Parse(@"{""Comma instead of colon"", null}");
+        parser.Parse("""{"Comma instead of colon", null}""");
         Assert.True(parser.Tainted);
     }
 
@@ -305,7 +311,7 @@ public class JsonParser_Tests
     public void Parse__Validity_Fail22()
     {
         JsonParser parser = new();
-        parser.Parse(@"[""Colon instead of comma"": false]");
+        parser.Parse("""["Colon instead of comma": false]""");
         Assert.True(parser.Tainted);
     }
 
@@ -313,7 +319,7 @@ public class JsonParser_Tests
     public void Parse__Validity_Fail23()
     {
         JsonParser parser = new();
-        parser.Parse(@"[""Bad value"", truth]");
+        parser.Parse("""["Bad value", truth]""");
         Assert.True(parser.Tainted);
     }
 
@@ -329,7 +335,7 @@ public class JsonParser_Tests
     public void Parse__Validity_Fail25()
     {
         JsonParser parser = new();
-        parser.Parse(@"[""	tab	character	in	string	""]");
+        parser.Parse("""["	tab	character	in	string	"]""");
         Assert.True(parser.Tainted);
     }
 
@@ -337,7 +343,7 @@ public class JsonParser_Tests
     public void Parse__Validity_Fail26()
     {
         JsonParser parser = new();
-        parser.Parse(@"[""tab\   character\   in\  string\  ""]");
+        parser.Parse("""["tab\   character\   in\  string\  "]""");
         Assert.True(parser.Tainted);
     }
 
@@ -345,8 +351,10 @@ public class JsonParser_Tests
     public void Parse__Validity_Fail27()
     {
         JsonParser parser = new();
-        parser.Parse(@"[""line
-break""]");
+        parser.Parse("""
+                     ["line
+                     break"]
+                     """);
         Assert.True(parser.Tainted);
     }
 
@@ -354,8 +362,10 @@ break""]");
     public void Parse__Validity_Fail28()
     {
         JsonParser parser = new();
-        parser.Parse(@"[""line\
-break""]");
+        parser.Parse("""
+                     ["line\
+                     break"]
+                     """);
         Assert.True(parser.Tainted);
     }
 
@@ -387,7 +397,7 @@ break""]");
     public void Parse__Validity_Fail32()
     {
         JsonParser parser = new();
-        parser.Parse(@"{""Comma instead if closing brace"": true,");
+        parser.Parse("""{"Comma instead if closing brace": true,""");
         Assert.True(parser.Tainted);
     }
 
@@ -395,7 +405,7 @@ break""]");
     public void Parse__Validity_Fail33()
     {
         JsonParser parser = new();
-        parser.Parse(@"[""mismatch""}");
+        parser.Parse("""["mismatch"}""");
         Assert.True(parser.Tainted);
     }
 
@@ -403,64 +413,66 @@ break""]");
     public void Parse__Validity_Pass01()
     {
         JsonParser parser = new();
-        parser.Parse(@"[
-    ""JSON Test Pattern pass1"",
-    {""object with 1 member"":[""array with 1 element""]},
-    {},
-    [],
-    -42,
-    true,
-    false,
-    null,
-    {
-        ""integer"": 1234567890,
-        ""real"": -9876.543210,
-        ""e"": 0.123456789e-12,
-        ""E"": 1.234567890E+34,
-        """":  23456789012E66,
-        ""zero"": 0,
-        ""one"": 1,
-        ""space"": "" "",
-        ""quote"": ""\"""",
-        ""backslash"": ""\\"",
-        ""controls"": ""\b\f\n\r\t"",
-        ""slash"": ""/ & \/"",
-        ""alpha"": ""abcdefghijklmnopqrstuvwyz"",
-        ""ALPHA"": ""ABCDEFGHIJKLMNOPQRSTUVWYZ"",
-        ""digit"": ""0123456789"",
-        ""0123456789"": ""digit"",
-        ""special"": ""`1~!@#$%^&*()_+-={':[,]}|;.</>?"",
-        ""hex"": ""\u0123\u4567\u89AB\uCDEF\uabcd\uef4A"",
-        ""true"": true,
-        ""false"": false,
-        ""null"": null,
-        ""array"":[  ],
-        ""object"":{  },
-        ""address"": ""50 St. James Street"",
-        ""url"": ""http://www.JSON.org/"",
-        ""comment"": ""// /* <!-- --"",
-        ""# -- --> */"": "" "",
-        "" s p a c e d "" :[1,2 , 3
+        parser.Parse("""
+                     [
+                         "JSON Test Pattern pass1",
+                         {"object with 1 member":["array with 1 element"]},
+                         {},
+                         [],
+                         -42,
+                         true,
+                         false,
+                         null,
+                         {
+                             "integer": 1234567890,
+                             "real": -9876.543210,
+                             "e": 0.123456789e-12,
+                             "E": 1.234567890E+34,
+                             "":  23456789012E66,
+                             "zero": 0,
+                             "one": 1,
+                             "space": " ",
+                             "quote": "\"",
+                             "backslash": "\\",
+                             "controls": "\b\f\n\r\t",
+                             "slash": "/ & \/",
+                             "alpha": "abcdefghijklmnopqrstuvwyz",
+                             "ALPHA": "ABCDEFGHIJKLMNOPQRSTUVWYZ",
+                             "digit": "0123456789",
+                             "0123456789": "digit",
+                             "special": "`1~!@#$%^&*()_+-={':[,]}|;.</>?",
+                             "hex": "\u0123\u4567\u89AB\uCDEF\uabcd\uef4A",
+                             "true": true,
+                             "false": false,
+                             "null": null,
+                             "array":[  ],
+                             "object":{  },
+                             "address": "50 St. James Street",
+                             "url": "http://www.JSON.org/",
+                             "comment": "// /* <!-- --",
+                             "# -- --> */": " ",
+                             " s p a c e d " :[1,2 , 3
 
-,
+                     ,
 
-4 , 5        ,          6           ,7        ],""compact"":[1,2,3,4,5,6,7],
-        ""jsontext"": ""{\""object with 1 member\"":[\""array with 1 element\""]}"",
-        ""quotes"": ""&#34; \u0022 %22 0x22 034 &#x22;"",
-        ""\/\\\""\uCAFE\uBABE\uAB98\uFCDE\ubcda\uef4A\b\f\n\r\t`1~!@#$%^&*()_+-=[]{}|;:',./<>?""
-: ""A key can be any string""
-    },
-    0.5 ,98.6
-,
-99.44
-,
+                     4 , 5        ,          6           ,7        ],"compact":[1,2,3,4,5,6,7],
+                             "jsontext": "{\"object with 1 member\":[\"array with 1 element\"]}",
+                             "quotes": "&#34; \u0022 %22 0x22 034 &#x22;",
+                             "\/\\\"\uCAFE\uBABE\uAB98\uFCDE\ubcda\uef4A\b\f\n\r\t`1~!@#$%^&*()_+-=[]{}|;:',./<>?"
+                     : "A key can be any string"
+                         },
+                         0.5 ,98.6
+                     ,
+                     99.44
+                     ,
 
-1066,
-1e1,
-0.1e1,
-1e-1,
-1e00,2e+00,2e-00
-,""rosebud""]");
+                     1066,
+                     1e1,
+                     0.1e1,
+                     1e-1,
+                     1e00,2e+00,2e-00
+                     ,"rosebud"]
+                     """);
         Assert.False(parser.Tainted);
     }
 
@@ -468,7 +480,7 @@ break""]");
     public void Parse__Validity_Pass02()
     {
         JsonParser parser = new();
-        parser.Parse(@"[[[[[[[[[[[[[[[[[[[""Not too deep""]]]]]]]]]]]]]]]]]]]");
+        parser.Parse("""[[[[[[[[[[[[[[[[[[["Not too deep"]]]]]]]]]]]]]]]]]]]""");
         Assert.False(parser.Tainted);
     }
 
@@ -476,13 +488,15 @@ break""]");
     public void Parse__Validity_Pass03()
     {
         JsonParser parser = new();
-        parser.Parse(@"{
-    ""JSON Test Pattern pass3"": {
-        ""The outermost value"": ""must be an object or array."",
-        ""In this test"": ""It is an object.""
-    }
-}
-");
+        parser.Parse("""
+                     {
+                         "JSON Test Pattern pass3": {
+                             "The outermost value": "must be an object or array.",
+                             "In this test": "It is an object."
+                         }
+                     }
+
+                     """);
         Assert.False(parser.Tainted);
     }
 
