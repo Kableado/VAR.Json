@@ -74,3 +74,5 @@ dotnet_naming_symbols.private_fields.required_modifiers =
 
 dotnet_naming_style.underscore_prefix_style.required_prefix = _
 dotnet_naming_style.underscore_prefix_style.capitalization = camel_case
+
+resharper_redundant_logical_conditional_expression_operand_highlighting = none
